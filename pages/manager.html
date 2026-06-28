@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Manager Dashboard – Grand Mehta Palace</title>
+<link rel="stylesheet" href="../css/global.css"/>
+<style>
+.dash-wrap{min-height:100vh;padding-top:70px;display:flex;}
+.sidebar{position:fixed;top:70px;left:0;bottom:0;width:240px;background:var(--dark-2);border-right:1px solid var(--dark-border);padding:20px 0;z-index:90;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:13px 22px;color:var(--text-secondary);font-size:0.88rem;font-weight:500;cursor:pointer;border-left:3px solid transparent;transition:var(--transition);}
+.nav-item:hover,.nav-item.active{background:rgba(201,168,76,0.08);color:var(--gold);border-left-color:var(--gold);}
+.nav-icon{font-size:1.1rem;width:22px;text-align:center;}
+.content{margin-left:240px;padding:28px;flex:1;}
+.section-block{display:none;animation:fadeIn 0.4s ease;}
+.section-block.active{display:block;}
+.page-title{font-family:var(--font-display);font-size:1.8rem;margin-bottom:6px;}
+.page-sub{font-size:0.85rem;color:var(--text-muted);margin-bottom:28px;}
+.live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:99px;padding:4px 12px;font-size:0.72rem;font-weight:700;color:var(--success);}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 1s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.order-row{background:var(--dark-card);border:1px solid var(--dark-border);border-radius:var(--radius);padding:18px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;transition:var(--transition);}
+.order-row:hover{border-color:var(--glass-border);}
+.order-row-left{display:flex;align-items:center;gap:16px;}
+.table-num-pill{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#0A0A0F;padding:6px 16px;border-radius:99px;font-weight:700;font-size:0.9rem;white-space:nowrap;}
+.order-items-text{font-size:0.82rem;color:var(--text-secondary);max-width:320px;}
+.order-time{font-size:0.75rem;color:var(--text-muted);}
+.table-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:28px;}
+.table-tile{background:var(--dark-card);border:2px solid var(--dark-border);border-radius:var(--radius);padding:18px;text-align:center;cursor:pointer;transition:var(--transition);}
+.table-tile:hover{transform:translateY(-3px);}
+.table-tile.occupied{border-color:rgba(239,68,68,0.5);background:rgba(239,68,68,0.05);}
+.table-tile.reserved{border-color:rgba(245,158,11,0.5);background:rgba(245,158,11,0.05);}
+.table-tile.available{border-color:rgba(34,197,94,0.3);}
+.table-num{font-family:var(--font-display);font-size:1.8rem;font-weight:700;color:var(--gold);}
+.table-status-txt{font-size:0.72rem;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.08em;}
+.staff-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:14px 18px;background:var(--dark-card);border:1px solid var(--dark-border);border-radius:var(--radius);margin-bottom:10px;transition:var(--transition);}
+.staff-row:hover{border-color:var(--glass-border);}
+.staff-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-dark));display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#0A0A0F;flex-shrink:0;}
+.att-btn{padding:5px 14px;border-radius:99px;font-size:0.75rem;font-weight:700;cursor:pointer;border:none;transition:var(--transition);}
+.att-btn.present{background:rgba(34,197,94,0.15);color:var(--success);border:1px solid rgba(34,197,94,0.3);}
+.att-btn.absent{background:rgba(239,68,68,0.15);color:var(--danger);border:1px solid rgba(239,68,68,0.3);}
+.att-btn.late{background:rgba(245,158,11,0.15);color:var(--warning);border:1px solid rgba(245,158,11,0.3);}
+.att-btn:hover{transform:scale(1.05);}
+@media(max-width:900px){.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.content{margin-left:0;}.table-grid{grid-template-columns:repeat(3,1fr);}}
+</style>
+</head>
+<body>
+
+<nav class="dash-nav">
+  <div class="nav-logo">✦ Manager Dashboard</div>
+  <div class="nav-actions">
+    <button class="btn btn-glass btn-sm" onclick="document.querySelector('.sidebar').classList.toggle('open')" style="display:none" id="mob-menu">☰</button>
+    <span style="font-size:0.85rem;color:var(--text-secondary)" id="mgr-name"></span>
+    <span class="live-badge"><span class="live-dot"></span>LIVE</span>
+    <button class="btn btn-outline btn-sm" onclick="hotelAuth.signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="dash-wrap">
+  <div class="sidebar" id="sidebar">
+    <div style="padding:0 22px 20px;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted)">Navigation</div>
+    <div class="nav-item active" onclick="showSection('orders')"><span class="nav-icon">📋</span>Live Orders</div>
+    <div class="nav-item" onclick="showSection('tables')"><span class="nav-icon">🪑</span>Table Monitor</div>
+    <div class="nav-item" onclick="showSection('attendance')"><span class="nav-icon">✅</span>Attendance</div>
+    <div class="nav-item" onclick="showSection('staff')"><span class="nav-icon">👥</span>Staff & Shifts</div>
+    <div class="nav-item" onclick="showSection('salary')"><span class="nav-icon">💰</span>Salary</div>
+    <div class="nav-item" onclick="showSection('leave')"><span class="nav-icon">📅</span>Leave Requests</div>
+    <div class="nav-item" onclick="showSection('reservation')"><span class="nav-icon">📆</span>Reservations</div>
+    <div class="nav-item" onclick="showSection('billing')"><span class="nav-icon">🧾</span>Billing & History</div>
+    <div style="padding:20px 22px 0;border-top:1px solid var(--dark-border);margin-top:20px;">
+      <a href="../index.html" style="font-size:0.85rem;color:var(--text-muted);">← Back to Hotel</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ORDERS -->
+    <div class="section-block active" id="sec-orders">
+      <div class="page-title">Live Orders</div>
+      <div class="page-sub">Real-time incoming and active orders</div>
+      <div class="stats-grid" id="mgr-stats"></div>
+      <div id="orders-list"><p style="color:var(--text-muted)">Loading orders...</p></div>
+    </div>
+
+    <!-- TABLES -->
+    <div class="section-block" id="sec-tables">
+      <div class="page-title">Table Monitor</div>
+      <div class="page-sub">Live status of all 10 dining tables</div>
+      <div class="table-grid" id="table-grid"></div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted)"><span style="width:14px;height:14px;border-radius:3px;background:rgba(34,197,94,0.3);display:inline-block"></span>Available</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted)"><span style="width:14px;height:14px;border-radius:3px;background:rgba(239,68,68,0.4);display:inline-block"></span>Occupied</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted)"><span style="width:14px;height:14px;border-radius:3px;background:rgba(245,158,11,0.4);display:inline-block"></span>Reserved</div>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="section-block" id="sec-attendance">
+      <div class="page-title">Attendance</div>
+      <div class="page-sub">Mark and manage daily staff attendance</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+        <div style="font-size:0.9rem;color:var(--text-secondary)">Date: <strong style="color:var(--gold)" id="att-date"></strong></div>
+        <button class="btn btn-primary btn-sm" onclick="saveAttendance()">Save All ✦</button>
+      </div>
+      <div id="att-list"></div>
+    </div>
+
+    <!-- STAFF -->
+    <div class="section-block" id="sec-staff">
+      <div class="page-title">Staff & Shifts</div>
+      <div class="page-sub">Manage team members and their shift schedules</div>
+      <div id="staff-list"></div>
+    </div>
+
+    <!-- SALARY -->
+    <div class="section-block" id="sec-salary">
+      <div class="page-title">Salary Management</div>
+      <div class="page-sub">Monthly salary records and payment status</div>
+      <div id="salary-list"></div>
+    </div>
+
+    <!-- LEAVE -->
+    <div class="section-block" id="sec-leave">
+      <div class="page-title">Leave Requests</div>
+      <div class="page-sub">Review and approve/reject staff leave applications</div>
+      <button class="btn btn-primary btn-sm mb-4" onclick="openLeaveForm()">+ Submit Leave Request</button>
+      <div id="leave-list"></div>
+    </div>
+
+    <!-- RESERVATION -->
+    <div class="section-block" id="sec-reservation">
+      <div class="page-title">Reservations</div>
+      <div class="page-sub">Table bookings and guest reservations</div>
+      <div id="reservation-list"></div>
+    </div>
+
+    <!-- BILLING & HISTORY -->
+    <div class="section-block" id="sec-billing">
+      <div class="page-title">Billing & History</div>
+      <div class="page-sub">Generate, search, and manage bills for all orders</div>
+
+      <!-- Stats row -->
+      <div class="stats-grid" id="billing-stats" style="margin-bottom:24px;">
+        <div class="stat-card"><div class="stat-icon">📄</div><div class="stat-value" id="stat-total-bills">0</div><div class="stat-label">Total Bills</div></div>
+        <div class="stat-card"><div class="stat-icon">📆</div><div class="stat-value" id="stat-today-bills">0</div><div class="stat-label">Today's Bills</div></div>
+        <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value" id="stat-paid-bills">0</div><div class="stat-label">Paid Bills</div></div>
+        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-value" id="stat-pending-bills">0</div><div class="stat-label">Pending Bills</div></div>
+      </div>
+
+      <!-- Filters & Search -->
+      <div class="chart-box" style="margin-bottom:20px;padding:20px;background:var(--dark-card);border:1px solid var(--dark-border);border-radius:var(--radius)">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Search Order / Bill ID</label>
+            <input type="text" class="form-input" id="bill-search-id" placeholder="e.g. order ID, table number" oninput="filterBills()"/>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Filter by Table</label>
+            <select class="form-input" id="bill-filter-table" onchange="filterBills()">
+              <option value="all">All Tables</option>
+              <option value="1">Table 1</option><option value="2">Table 2</option><option value="3">Table 3</option>
+              <option value="4">Table 4</option><option value="5">Table 5</option><option value="6">Table 6</option>
+              <option value="7">Table 7</option><option value="8">Table 8</option><option value="9">Table 9</option>
+              <option value="10">Table 10</option><option value="11">Table 11</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Filter by Date</label>
+            <input type="date" class="form-input" id="bill-filter-date" onchange="filterBills()"/>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Payment Status</label>
+            <select class="form-input" id="bill-filter-status" onchange="filterBills()">
+              <option value="all">All Statuses</option>
+              <option value="paid">Paid</option>
+              <option value="unpaid">Unpaid</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bills List -->
+      <div id="manager-bills-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- Leave Form Modal -->
+<div class="modal-overlay" id="leave-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Submit <span class="text-gold">Leave Request</span></div>
+      <button class="modal-close" onclick="closeModal('leave-modal')">✕</button>
+    </div>
+    <div class="form-group"><label class="form-label">Staff Member</label>
+      <select class="form-input" id="leave-staff-id"></select>
+    </div>
+    <div class="form-group"><label class="form-label">Leave Date</label><input type="date" class="form-input" id="leave-date"/></div>
+    <div class="form-group"><label class="form-label">Reason</label><textarea class="form-input" id="leave-reason" rows="3" placeholder="Reason for leave..."></textarea></div>
+    <button class="btn btn-primary w-full" onclick="submitLeave()">Submit Request</button>
+  </div>
+</div>
+
+<!-- Edit Reservation Modal -->
+<div class="modal-overlay" id="edit-res-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit <span class="text-gold">Reservation</span></div>
+      <button class="modal-close" onclick="closeModal('edit-res-modal')">✕</button>
+    </div>
+    <input type="hidden" id="edit-res-id"/>
+    <div class="form-group"><label class="form-label">Customer Name</label><input type="text" class="form-input" id="edit-res-name" required/></div>
+    <div class="form-group"><label class="form-label">Customer Phone</label><input type="text" class="form-input" id="edit-res-phone" required/></div>
+    <div class="form-group"><label class="form-label">Date & Time</label><input type="datetime-local" class="form-input" id="edit-res-datetime" required/></div>
+    <div class="form-group"><label class="form-label">Guests</label>
+      <select class="form-input" id="edit-res-guests">
+        <option value="1">1 Person</option><option value="2">2 People</option><option value="3">3 People</option>
+        <option value="4">4 People</option><option value="5">5 People</option><option value="6+">6+ People</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Status</label>
+      <select class="form-input" id="edit-res-status">
+        <option value="pending">Pending</option><option value="confirmed">Confirmed</option>
+        <option value="completed">Completed</option><option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+    <button class="btn btn-primary w-full mt-4" onclick="saveReservation()">Save Reservation</button>
+  </div>
+</div>
+
+<!-- View Bill Modal -->
+<div class="modal-overlay" id="view-bill-modal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <div class="modal-title">Receipt <span class="text-gold">Preview</span></div>
+      <button class="modal-close" onclick="closeModal('view-bill-modal')">✕</button>
+    </div>
+    <div id="bill-preview-content" style="background:#fff;color:#111;padding:24px;border-radius:var(--radius-sm);font-family:'Georgia',serif;max-height:70vh;overflow-y:auto;box-shadow:inset 0 0 10px rgba(0,0,0,0.05);">
+      <!-- Receipt content gets dynamically injected here -->
+    </div>
+    <div style="display:flex;gap:12px;margin-top:16px;">
+      <button class="btn btn-primary flex-1" id="print-preview-btn">🖨️ Print Bill</button>
+      <button class="btn btn-success flex-1" id="download-preview-btn">📥 Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/utils.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+const user = window.hotelAuth.getUser();
+if(!user||user.role!=='manager'){alert('Access denied.');window.location.href='../index.html';}
+else document.getElementById('mgr-name').textContent=`📋 ${user.name}`;
+
+document.getElementById('att-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+function showToast(msg,type='info'){const c=document.getElementById('toast-container');const t=document.createElement('div');t.className=`toast toast-${type}`;t.innerHTML=`<span>${msg}</span>`;c.appendChild(t);setTimeout(()=>{t.style.animation='slideOut 0.4s ease forwards';setTimeout(()=>t.remove(),400);},3500);}
+function closeModal(id){
+  if(id) document.getElementById(id)?.classList.remove('active');
+  else document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('active'));
+}
+window.closeModal=closeModal;
+function openLeaveForm(){
+  const staff=Object.values(window.HotelDB.cache.staff||{});
+  document.getElementById('leave-staff-id').innerHTML=staff.map(s=>`<option value="${s.id}">${s.name} (${s.role})</option>`).join('');
+  document.getElementById('leave-modal').classList.add('active');
+}
+window.openLeaveForm=openLeaveForm;
+
+function showSection(name){
+  document.querySelectorAll('.section-block').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(`sec-${name}`).classList.add('active');
+  event.currentTarget.classList.add('active');
+  document.querySelector('.sidebar').classList.remove('open');
+}
+window.showSection=showSection;
+
+// Orders
+let ordersCache = [];
+let hotelSettings = { name: "Grand Mehta Palace", logo: "✦", tax: 5, currency: "₹" };
+
+// Fetch general settings dynamically in real-time
+window.firestore.onSnapshot('settings', list => {
+  const gen = list.find(s => s.id === 'general');
+  if (gen) {
+    hotelSettings = {
+      name: gen.name || "Grand Mehta Palace",
+      logo: gen.logo || "✦",
+      tax: parseFloat(gen.tax || 5),
+      currency: gen.currency || "₹"
+    };
+  }
+});
+
+window.firestore.onSnapshot('orders',orders=>{
+  ordersCache = orders;
+  const active=orders.filter(o=>o.status!=='served'&&o.status!=='rejected');
+  const today=new Date().toISOString().split('T')[0];
+  const todayRevenue=orders.filter(o=>o.paid&&o.createdAt&&o.createdAt.startsWith(today)).reduce((s,o)=>s+(o.total||0),0);
+  const s=document.getElementById('mgr-stats');
+  s.innerHTML=`
+    <div class="stat-card"><div class="stat-icon">🆕</div><div class="stat-value">${orders.filter(o=>o.status==='preparing').length}</div><div class="stat-label">Preparing</div></div>
+    <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-value">${orders.filter(o=>o.status==='cooking').length}</div><div class="stat-label">Cooking</div></div>
+    <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">${orders.filter(o=>o.status==='ready').length}</div><div class="stat-label">Ready</div></div>
+    <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value">₹${todayRevenue.toLocaleString()}</div><div class="stat-label">Today Revenue</div></div>`;
+  const list=document.getElementById('orders-list');
+  if(!orders.length){list.innerHTML='<p style="color:var(--text-muted)">No orders yet.</p>';return;}
+  list.innerHTML=orders.slice().reverse().map(o=>`
+    <div class="order-row" style="flex-direction:column;align-items:stretch;gap:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <div class="order-row-left">
+          <div class="table-num-pill">Table ${o.tableNumber}</div>
+          <div>
+            <div class="order-items-text">${(o.items||[]).map(i=>`${i.name} ×${i.qty}`).join(' · ')}</div>
+            <div class="order-time">${new Date(o.createdAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} · ₹${o.total}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="badge badge-${o.status}">${o.status}</span>
+          ${o.status==='ready'?`<button class="btn btn-success btn-sm" onclick="markServed('${o.id}')">Mark Served</button>`:''}
+          ${!o.paid&&o.status==='served'?`<button class="btn btn-primary btn-sm" onclick="markPaid('${o.id}')">Mark Paid</button>`:''}
+          ${o.paid?`<span style="color:var(--success);font-size:0.78rem;font-weight:700">✓ PAID</span>`:''}
+        </div>
+      </div>
+      
+      <!-- Completed order actions -->
+      ${(o.status==='served'||o.paid) ? `
+        <div style="display:flex;gap:6px;flex-wrap:wrap;border-top:1px dashed var(--dark-border);padding-top:10px;margin-top:2px;">
+          <button class="btn btn-outline btn-xs" onclick="viewBillDetails('${o.id}')">👁️ View Bill</button>
+          <button class="btn btn-outline btn-xs" onclick="printBillDirectly('${o.id}')">🖨️ Print</button>
+          <button class="btn btn-outline btn-xs" onclick="downloadBillPDF('${o.id}')">📥 Download PDF</button>
+          <button class="btn btn-outline btn-xs" onclick="shareBill('${o.id}')">🔗 Share</button>
+        </div>
+      ` : ''}
+    </div>`).join('');
+    
+  renderBillingTab();
+});
+
+async function markServed(id){await window.firestore.update('orders',id,{status:'served'});showToast('Order marked served!','success');}
+async function markPaid(id){await window.firestore.update('orders',id,{paid:true,paidAt:new Date().toISOString()});showToast('Payment recorded ✦','success');}
+window.markServed=markServed; window.markPaid=markPaid;
+
+// Billing functions
+function renderBillingTab() {
+  if (!ordersCache.length) return;
+  const today = new Date().toISOString().split('T')[0];
+  const total = ordersCache.length;
+  const todayBills = ordersCache.filter(o => o.createdAt && o.createdAt.startsWith(today)).length;
+  const paid = ordersCache.filter(o => o.paid).length;
+  const pending = total - paid;
+  
+  document.getElementById('stat-total-bills').textContent = total;
+  document.getElementById('stat-today-bills').textContent = todayBills;
+  document.getElementById('stat-paid-bills').textContent = paid;
+  document.getElementById('stat-pending-bills').textContent = pending;
+  
+  filterBills();
+}
+
+function filterBills() {
+  const searchVal = document.getElementById('bill-search-id').value.toLowerCase().trim();
+  const tableVal = document.getElementById('bill-filter-table').value;
+  const dateVal = document.getElementById('bill-filter-date').value;
+  const statusVal = document.getElementById('bill-filter-status').value;
+  
+  let filtered = ordersCache.slice();
+  
+  if (searchVal) {
+    filtered = filtered.filter(o => 
+      o.id.toLowerCase().includes(searchVal) || 
+      `table ${o.tableNumber}`.toLowerCase().includes(searchVal) ||
+      (o.items || []).some(i => i.name.toLowerCase().includes(searchVal))
+    );
+  }
+  
+  if (tableVal !== 'all') {
+    filtered = filtered.filter(o => o.tableNumber === parseInt(tableVal));
+  }
+  
+  if (dateVal) {
+    filtered = filtered.filter(o => o.createdAt && o.createdAt.startsWith(dateVal));
+  }
+  
+  if (statusVal !== 'all') {
+    const isPaid = statusVal === 'paid';
+    filtered = filtered.filter(o => o.paid === isPaid);
+  }
+  
+  const list = document.getElementById('manager-bills-list');
+  if (!filtered.length) {
+    list.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding: 24px;">No matching bills found.</p>';
+    return;
+  }
+  
+  list.innerHTML = `
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Invoice No / ID</th>
+            <th>Table</th>
+            <th>Date & Time</th>
+            <th>Items</th>
+            <th>Grand Total</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.reverse().map(o => {
+            const dateStr = o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN') : '—';
+            const invoiceNo = o.id.slice(-6).toUpperCase();
+            return `
+              <tr>
+                <td><strong>#${invoiceNo}</strong><div style="font-size:0.72rem;color:var(--text-muted);">${o.id}</div></td>
+                <td><span class="table-num-pill" style="margin:0;">Table ${o.tableNumber}</span></td>
+                <td><span style="font-size:0.85rem;">${dateStr}</span></td>
+                <td><div style="font-size:0.8rem;max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${(o.items||[]).map(i=>`${i.name} x${i.qty}`).join(', ')}">${(o.items||[]).map(i=>`${i.name} x${i.qty}`).join(', ')}</div></td>
+                <td style="color:var(--gold);font-weight:700;">₹${(o.total || 0).toLocaleString()}</td>
+                <td><span class="badge badge-${o.paid ? 'active' : 'pending'}">${o.paid ? 'Paid' : 'Unpaid'}</span></td>
+                <td>
+                  <div style="display:flex;gap:6px;">
+                    <button class="btn btn-outline btn-sm" onclick="viewBillDetails('${o.id}')">👁️ View</button>
+                    <button class="btn btn-outline btn-sm" onclick="printBillDirectly('${o.id}')">🖨️ Print</button>
+                    <button class="btn btn-outline btn-sm" onclick="downloadBillPDF('${o.id}')">📥 PDF</button>
+                    <button class="btn btn-outline btn-sm" onclick="shareBill('${o.id}')">🔗 Share</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function getBillHTML(order) {
+  const invoiceNo = order.id.slice(-6).toUpperCase();
+  const dateStr = order.createdAt ? new Date(order.createdAt).toLocaleString('en-IN') : new Date().toLocaleString('en-IN');
+  const currencySymbol = hotelSettings.currency || '₹';
+  
+  // Calculations
+  const subtotal = order.items.reduce((s, i) => s + (i.price * i.qty), 0);
+  const taxRate = hotelSettings.tax || 5;
+  const taxAmt = Math.round(subtotal * (taxRate / 100));
+  const grandTotal = subtotal + taxAmt;
+  
+  const itemsRows = order.items.map(i => `
+    <tr>
+      <td style="padding: 6px 0; border-bottom: 1px dashed #ddd; text-align: left; color:#000;">${i.name}</td>
+      <td style="padding: 6px 0; border-bottom: 1px dashed #ddd; text-align: center; color:#000;">${i.qty}</td>
+      <td style="padding: 6px 0; border-bottom: 1px dashed #ddd; text-align: right; color:#000;">${currencySymbol}${i.price}</td>
+      <td style="padding: 6px 0; border-bottom: 1px dashed #ddd; text-align: right; color:#000;">${currencySymbol}${i.price * i.qty}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <div style="font-family:'Courier New',Courier,monospace;line-height:1.4;color:#000;padding:10px;background:#fff;">
+      <div style="text-align:center;margin-bottom:12px;">
+        <span style="font-size:2rem;font-weight:bold;color:#000;">${hotelSettings.logo}</span>
+        <h2 style="margin:4px 0 2px 0;font-size:1.3rem;text-transform:uppercase;color:#000;font-weight:bold;">${hotelSettings.name}</h2>
+        <div style="font-size:0.75rem;color:#333;">Luxury Hotel & Fine Dining</div>
+        <div style="font-size:0.75rem;color:#333;margin-top:2px;">Ahmedabad, Gujarat</div>
+      </div>
+      
+      <div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:8px 0;margin-bottom:12px;font-size:0.8rem;color:#000;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Invoice No:</span><strong>#${invoiceNo}</strong></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Order ID:</span><span style="font-size:0.75rem;font-weight:bold;">${order.id}</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Table:</span><strong>Table ${order.tableNumber}</strong></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Date:</span><span>${dateStr}</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Payment Status:</span><strong>${order.paid ? 'PAID' : 'UNPAID'}</strong></div>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;font-size:0.8rem;margin-bottom:12px;color:#000;">
+        <thead>
+          <tr style="border-bottom:1px solid #000;">
+            <th style="text-align:left;padding-bottom:4px;color:#000;">Item</th>
+            <th style="text-align:center;padding-bottom:4px;width:40px;color:#000;">Qty</th>
+            <th style="text-align:right;padding-bottom:4px;width:70px;color:#000;">Rate</th>
+            <th style="text-align:right;padding-bottom:4px;width:70px;color:#000;">Amt</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsRows}
+        </tbody>
+      </table>
+
+      <div style="font-size:0.82rem;margin-bottom:16px;color:#000;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>Subtotal:</span><span>${currencySymbol}${subtotal.toLocaleString()}</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>GST (${taxRate}%):</span><span>${currencySymbol}${taxAmt.toLocaleString()}</span></div>
+        <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:1rem;border-top:1px double #000;padding-top:4px;margin-top:4px;color:#000;"><span>Grand Total:</span><span>${currencySymbol}${grandTotal.toLocaleString()}</span></div>
+      </div>
+
+      <div style="text-align:center;margin-top:20px;font-size:0.8rem;border-top:1px dashed #000;padding-top:12px;color:#000;">
+        <div style="margin-bottom:8px;font-weight:bold;color:#000;">Scan to Pay via UPI</div>
+        <div style="display:inline-block;padding:8px;background:#fff;border:1px solid #ccc;border-radius:4px;margin-bottom:8px;">
+          <svg width="100" height="100" viewBox="0 0 29 29" style="display:block;margin:0 auto;shape-rendering:crispEdges;fill:#000;">
+            <path d="M0 0h7v7H0zm1 1v5h5V1zm8 0h1v1H9zm1 1h1v1h-1zm1 1h1v1h-1zm-2 1h1v1H9zm3 0h1v1h-1zm1 1h1v1h-1zm-4 1h1v1H9zm3 1h1v1h-1zM0 9h7v7H0zm1 1v5h5v-5zm11 0h1v1h-1zm-1 1h1v1h-1zm2 1h1v1h-1zm-2 2h1v1h-1zm1 1h1v1h-1zm-8 2h7v7H0zm1 1v5h5v-5zm11 0h1v1h-1zm-1 1h1v1h-1zm2 1h1v1h-1zm-2 2h1v1h-1zm1 1h1v1h-1zm10-18h7v7h-7zm1 1v5h5V1zm-2 8h1v1h-1zm2 0h1v1h-1zm1 1h1v1h-1zm1 1h1v1h-1zm-2 2h1v1h-1zm2 1h1v1h-1zm-4 2h1v1h-1zm1 1h1v1h-1zm1 1h1v1h-1zm1 1h1v1h-1z"/>
+          </svg>
+        </div>
+        <div style="font-style:italic;margin-top:6px;color:#000;">Thank you for visiting.</div>
+      </div>
+    </div>
+  `;
+}
+
+function viewBillDetails(orderId) {
+  const o = ordersCache.find(x => x.id === orderId);
+  if (!o) return;
+  const content = getBillHTML(o);
+  document.getElementById('bill-preview-content').innerHTML = content;
+  
+  // Attach buttons in modal
+  document.getElementById('print-preview-btn').onclick = () => printBillDirectly(orderId);
+  document.getElementById('download-preview-btn').onclick = () => downloadBillPDF(orderId);
+  
+  openModal('view-bill-modal');
+}
+
+function printBillDirectly(orderId) {
+  const o = ordersCache.find(x => x.id === orderId);
+  if (!o) return;
+  const content = getBillHTML(o);
+  
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html>
+      <head>
+        <title>Receipt - ${orderId}</title>
+        <style>
+          @page { size: auto; margin: 0mm; }
+          body { padding: 20px; background: #fff; color: #000; }
+          @media print {
+            body { padding: 10px; }
+          }
+        </style>
+      </head>
+      <body onload="window.print();window.close();">
+        ${content}
+      </body>
+    </html>
+  `);
+  win.document.close();
+}
+
+function downloadBillPDF(orderId) {
+  const o = ordersCache.find(x => x.id === orderId);
+  if (!o) return;
+  const content = getBillHTML(o);
+  
+  const element = document.createElement('div');
+  element.style.padding = '20px';
+  element.style.background = '#fff';
+  element.innerHTML = content;
+  
+  const opt = {
+    margin:       10,
+    filename:     `bill_${orderId.slice(-6).toUpperCase()}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  
+  html2pdf().from(element).set(opt).save();
+  showToast('PDF downloaded successfully!', 'success');
+}
+
+function shareBill(orderId) {
+  const url = `${window.location.origin}/pages/bill_view.html?orderId=${orderId}`;
+  navigator.clipboard.writeText(url);
+  showToast('Bill link copied to clipboard! (Future-Ready)', 'success');
+}
+
+// Bind methods globally
+window.viewBillDetails = viewBillDetails;
+window.printBillDirectly = printBillDirectly;
+window.downloadBillPDF = downloadBillPDF;
+window.shareBill = shareBill;
+window.filterBills = filterBills;
+window.renderBillingTab = renderBillingTab;
+
+// Tables
+window.firestore.onSnapshot('tables',tables=>{
+  const grid=document.getElementById('table-grid');
+  grid.innerHTML=tables.sort((a,b)=>a.number-b.number).map(t=>`
+    <div class="table-tile ${t.status}" onclick="toggleTable('${t.id}','${t.status}')">
+      <div class="table-num">${t.number}</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px">Cap: ${t.capacity}</div>
+      <div class="table-status-txt">${t.status}</div>
+      ${t.status==='occupied'?'<div style="font-size:0.7rem;color:var(--danger);margin-top:4px">● Active</div>':''}
+    </div>`).join('');
+});
+async function toggleTable(id,status){
+  const next={available:'reserved',reserved:'occupied',occupied:'available'};
+  await window.firestore.update('tables',id,{status:next[status]||'available'});
+}
+window.toggleTable=toggleTable;
+
+// Attendance
+let attData={};
+let staffCache=[];
+window.firestore.onSnapshot('staff', items=>{
+  staffCache=items;
+  renderAttendance();
+  renderStaff();
+  renderSalary();
+});
+window.firestore.onSnapshot('attendance', items=>{
+  const today=new Date().toISOString().split('T')[0];
+  items.forEach(a=>{if(a.date===today)attData[a.staffId]=a.status;});
+  renderAttendance();
+});
+function renderAttendance(){
+  if(!staffCache.length) return;
+  document.getElementById('att-list').innerHTML=staffCache.map(s=>{
+    const cur=attData[s.id]||'present';
+    return `<div class="staff-row">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div class="staff-avatar">${(s.name||'?')[0]}</div>
+        <div><div style="font-weight:600">${s.name}</div><div style="font-size:0.78rem;color:var(--text-muted)">${s.role} · ${s.shift||'—'} shift</div></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="att-btn present ${cur==='present'?'active':''}" onclick="setAtt('${s.id}','present')" style="${cur==='present'?'outline:2px solid var(--success)':''}">✓ Present</button>
+        <button class="att-btn late ${cur==='late'?'active':''}" onclick="setAtt('${s.id}','late')" style="${cur==='late'?'outline:2px solid var(--warning)':''}">⏰ Late</button>
+        <button class="att-btn absent ${cur==='absent'?'active':''}" onclick="setAtt('${s.id}','absent')" style="${cur==='absent'?'outline:2px solid var(--danger)':''}">✕ Absent</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function setAtt(staffId,status){attData[staffId]=status;renderAttendance();}
+window.setAtt=setAtt;
+async function saveAttendance(){
+  const today=new Date().toISOString().split('T')[0];
+  for(const [staffId,status] of Object.entries(attData)){
+    await window.firestore.set('attendance',`${today}_${staffId}`,{staffId,date:today,status});
+  }
+  showToast('Attendance saved successfully ✦','success');
+}
+window.saveAttendance=saveAttendance;
+
+// Staff (rendered by onSnapshot above)
+function renderStaff(){
+  if(!staffCache.length) return;
+  document.getElementById('staff-list').innerHTML=staffCache.map(s=>`
+    <div class="staff-row">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div class="staff-avatar">${(s.name||'?')[0]}</div>
+        <div><div style="font-weight:600">${s.name}</div><div style="font-size:0.78rem;color:var(--text-muted)">${s.role} · Joined ${s.joinDate||'—'}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="text-align:right"><div style="font-size:0.78rem;color:var(--text-muted)">Shift</div><div style="font-weight:600;color:var(--gold);text-transform:capitalize">${s.shift||'—'}</div></div>
+        <div style="text-align:right"><div style="font-size:0.78rem;color:var(--text-muted)">Phone</div><div style="font-size:0.85rem">${s.phone||'—'}</div></div>
+        <span class="badge badge-${s.status}">${s.status}</span>
+      </div>
+    </div>`).join('');
+}
+
+// Salary (rendered by onSnapshot above)
+function renderSalary(){
+  if(!staffCache.length) return;
+  document.getElementById('salary-list').innerHTML=`<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Name</th><th>Role</th><th>Monthly Salary</th><th>Status</th><th>Action</th></tr></thead><tbody>${staffCache.map(s=>`
+    <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="staff-avatar" style="width:32px;height:32px;font-size:0.8rem">${(s.name||'?')[0]}</div>${s.name}</div></td>
+    <td style="text-transform:capitalize">${s.role}</td>
+    <td style="color:var(--gold);font-weight:700">₹${(s.salary||0).toLocaleString()}</td>
+    <td><span class="badge badge-active">Paid</span></td>
+    <td><button class="btn btn-outline btn-sm">View Slip</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+// Leave (loaded via onSnapshot below)
+window.firestore.onSnapshot('leave_requests',leaves=>{
+  const list=document.getElementById('leave-list');
+  if(!leaves.length){list.innerHTML='<p style="color:var(--text-muted)">No leave requests yet.</p>';return;}
+  list.innerHTML=leaves.map(l=>`<div class="order-row"><div><strong>${l.staffName}</strong> — ${l.date}</div><div style="font-size:0.85rem;color:var(--text-muted)">${l.reason}</div><div style="display:flex;gap:8px"><button class="btn btn-success btn-sm" onclick="approveLeave('${l.id}')">Approve</button><button class="btn btn-danger btn-sm" onclick="rejectLeave('${l.id}')">Reject</button></div></div>`).join('');
+});
+async function approveLeave(id){await window.firestore.update('leave_requests',id,{status:'approved'});showToast('Leave approved','success');}
+async function rejectLeave(id){await window.firestore.update('leave_requests',id,{status:'rejected'});showToast('Leave rejected','error');}
+window.approveLeave=approveLeave;window.rejectLeave=rejectLeave;
+
+async function submitLeave(){
+  const staffId=document.getElementById('leave-staff-id').value;
+  const staff=staffCache.find(s=>s.id===staffId);
+  const date=document.getElementById('leave-date').value;
+  const reason=document.getElementById('leave-reason').value;
+  if(!date||!reason){showToast('Fill all fields','error');return;}
+  await window.firestore.set('leave_requests',null,{staffId,staffName:staff?.name||'Staff',date,reason,status:'pending'});
+  closeModal(); showToast('Leave request submitted','success');
+}
+window.submitLeave=submitLeave;
+
+// Reservations
+let reservationsCache = [];
+window.firestore.onSnapshot('reservations',res=>{
+  reservationsCache = res;
+  const list=document.getElementById('reservation-list');
+  if(!res.length){list.innerHTML='<p style="color:var(--text-muted)">No reservations yet.</p>';return;}
+  list.innerHTML=res.slice().reverse().map(r=>`
+    <div class="order-row">
+      <div>
+        <strong>${r.name}</strong> (${r.phone || '—'}) · ${r.guests} guests
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:4px">${new Date(r.datetime||r.createdAt).toLocaleString('en-IN')}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="badge badge-${r.status==='confirmed'?'available':r.status==='completed'?'served':r.status==='cancelled'?'rejected':'preparing'}">${r.status||'pending'}</span>
+        <button class="btn btn-outline btn-sm" onclick="editReservation('${r.id}')">✏️ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteReservation('${r.id}')">🗑️</button>
+      </div>
+    </div>`).join('');
+});
+
+function editReservation(id) {
+  const r = reservationsCache.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('edit-res-id').value = id;
+  document.getElementById('edit-res-name').value = r.name || '';
+  document.getElementById('edit-res-phone').value = r.phone || '';
+  document.getElementById('edit-res-datetime').value = r.datetime ? r.datetime.slice(0, 16) : '';
+  document.getElementById('edit-res-guests').value = r.guests || '2';
+  document.getElementById('edit-res-status').value = r.status || 'pending';
+  openModal('edit-res-modal');
+}
+
+async function saveReservation() {
+  const id = document.getElementById('edit-res-id').value;
+  const data = {
+    name: document.getElementById('edit-res-name').value,
+    phone: document.getElementById('edit-res-phone').value,
+    datetime: document.getElementById('edit-res-datetime').value,
+    guests: document.getElementById('edit-res-guests').value,
+    status: document.getElementById('edit-res-status').value,
+    updatedAt: new Date().toISOString()
+  };
+  await window.firestore.update('reservations', id, data);
+  closeModal('edit-res-modal');
+  showToast('Reservation updated successfully!', 'success');
+}
+
+async function deleteReservation(id) {
+  if(!confirm('Delete this reservation?')) return;
+  await window.firestore.delete('reservations', id);
+  showToast('Reservation deleted', 'warning');
+}
+
+window.editReservation = editReservation;
+window.saveReservation = saveReservation;
+window.deleteReservation = deleteReservation;
+
+// Mobile menu button
+if(window.innerWidth<=900) document.getElementById('mob-menu').style.display='block';
+</script>
+</body>
+</html>

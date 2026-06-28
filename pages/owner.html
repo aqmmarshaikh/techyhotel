@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Owner Dashboard – Grand Mehta Palace</title>
+<link rel="stylesheet" href="../css/global.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+.dash-wrap{min-height:100vh;padding-top:70px;display:flex;}
+.sidebar{position:fixed;top:70px;left:0;bottom:0;width:240px;background:var(--dark-2);border-right:1px solid var(--dark-border);padding:20px 0;z-index:90;overflow-y:auto;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:13px 22px;color:var(--text-secondary);font-size:0.88rem;font-weight:500;cursor:pointer;border-left:3px solid transparent;transition:var(--transition);}
+.nav-item:hover,.nav-item.active{background:rgba(201,168,76,0.08);color:var(--gold);border-left-color:var(--gold);}
+.nav-icon{font-size:1.1rem;width:22px;text-align:center;}
+.content{margin-left:240px;padding:28px;flex:1;}
+.section-block{display:none;animation:fadeIn 0.4s ease;}
+.section-block.active{display:block;}
+.page-title{font-family:var(--font-display);font-size:1.8rem;margin-bottom:6px;}
+.page-sub{font-size:0.85rem;color:var(--text-muted);margin-bottom:28px;}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;}
+.chart-box{background:var(--dark-card);border:1px solid var(--dark-border);border-radius:var(--radius);padding:24px;}
+.chart-box h4{font-size:0.9rem;letter-spacing:0.05em;color:var(--text-secondary);margin-bottom:16px;text-transform:uppercase;}
+.top-food-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--dark-border);}
+.top-food-item:last-child{border-bottom:none;}
+.food-rank{width:24px;height:24px;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#0A0A0F;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;}
+.toggle-pill{display:flex;background:var(--dark-card);border:1px solid var(--dark-border);border-radius:99px;padding:4px;gap:4px;width:fit-content;margin-bottom:20px;}
+.toggle-opt{padding:6px 18px;border-radius:99px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:var(--transition);color:var(--text-muted);}
+.toggle-opt.active{background:var(--gold);color:#0A0A0F;}
+.menu-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--dark-card);border:1px solid var(--dark-border);border-radius:var(--radius);margin-bottom:10px;transition:var(--transition);}
+.menu-toggle-row:hover{border-color:var(--glass-border);}
+.toggle-switch{position:relative;width:48px;height:26px;cursor:pointer;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;background:var(--dark-border);border-radius:99px;transition:0.3s;}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:0.3s;}
+.toggle-switch input:checked+.toggle-track{background:var(--success);}
+.toggle-switch input:checked~.toggle-thumb{transform:translateX(22px);}
+.billing-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:16px 18px;background:var(--dark-card);border:1px solid var(--dark-border);border-radius:var(--radius);margin-bottom:10px;}
+@media(max-width:900px){.sidebar{transform:translateX(-100%);}.sidebar.open{transform:translateX(0);}.content{margin-left:0;}.charts-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<nav class="dash-nav">
+  <div class="nav-logo">✦ Owner Dashboard</div>
+  <div class="nav-actions">
+    <span style="font-size:0.85rem;color:var(--gold)">👑 Arjun Mehta</span>
+    <button class="btn btn-outline btn-sm" onclick="toggleTheme()">☀️</button>
+    <button class="btn btn-outline btn-sm" onclick="hotelAuth.signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="dash-wrap">
+  <div class="sidebar" id="sidebar">
+    <div style="padding:0 22px 20px;font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted)">Analytics</div>
+    <div class="nav-item active" onclick="showSec('analytics')"><span class="nav-icon">📊</span>Analytics</div>
+    <div class="nav-item" onclick="showSec('orders')"><span class="nav-icon">📋</span>Order History</div>
+    <div class="nav-item" onclick="showSec('billing')"><span class="nav-icon">🧾</span>Billing</div>
+    <div class="nav-item" onclick="showSec('menu')"><span class="nav-icon">🍽️</span>Menu Control</div>
+    <div class="nav-item" onclick="showSec('staff')"><span class="nav-icon">👥</span>Staff & Salary</div>
+    <div class="nav-item" onclick="showSec('attendance')"><span class="nav-icon">✅</span>Attendance</div>
+    <div class="nav-item" onclick="showSec('leave')"><span class="nav-icon">📅</span>Leave Approvals</div>
+    <div class="nav-item" onclick="showSec('tables')"><span class="nav-icon">🪑</span>Live Tables</div>
+    <div class="nav-item" onclick="showSec('admin')"><span class="nav-icon">⚙️</span>Admin Control</div>
+    <div style="padding:20px 22px 0;border-top:1px solid var(--dark-border);margin-top:20px;">
+      <a href="../index.html" style="font-size:0.85rem;color:var(--text-muted)">← Back to Hotel</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ANALYTICS -->
+    <div class="section-block active" id="sec-analytics">
+      <div class="page-title">Analytics Overview</div>
+      <div class="page-sub">Real-time business performance dashboard</div>
+      <div class="stats-grid" id="owner-stats"></div>
+      <div class="charts-grid">
+        <div class="chart-box" style="grid-column:1/-1">
+          <h4>Revenue Trend</h4>
+          <div class="toggle-pill">
+            <div class="toggle-opt active" onclick="switchChart('daily',this)">Daily</div>
+            <div class="toggle-opt" onclick="switchChart('weekly',this)">Weekly</div>
+            <div class="toggle-opt" onclick="switchChart('monthly',this)">Monthly</div>
+          </div>
+          <canvas id="revenue-chart" height="100"></canvas>
+        </div>
+        <div class="chart-box">
+          <h4>Orders by Category</h4>
+          <canvas id="cat-chart" height="200"></canvas>
+        </div>
+        <div class="chart-box">
+          <h4>Top Ordered Items</h4>
+          <div id="top-foods"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="section-block" id="sec-orders">
+      <div class="page-title">Order History</div>
+      <div class="page-sub">Complete log of all orders</div>
+      <div id="owner-orders-list"></div>
+    </div>
+
+    <!-- BILLING -->
+    <div class="section-block" id="sec-billing">
+      <div class="page-title">Billing & Payments</div>
+      <div class="page-sub">Generate and manage bills</div>
+      <div id="billing-list"></div>
+    </div>
+
+    <!-- MENU CONTROL -->
+    <div class="section-block" id="sec-menu">
+      <div class="page-title">Menu Control</div>
+      <div class="page-sub">Toggle item availability on/off</div>
+      <div id="menu-control-list"></div>
+    </div>
+
+    <!-- STAFF -->
+    <div class="section-block" id="sec-staff">
+      <div class="page-title">Staff & Salary</div>
+      <div class="page-sub">Full staff records and salary management</div>
+      <div id="owner-staff-list"></div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="section-block" id="sec-attendance">
+      <div class="page-title">Attendance Reports</div>
+      <div class="page-sub">View all staff attendance records</div>
+      <div id="owner-att-list"></div>
+    </div>
+
+    <!-- LEAVE -->
+    <div class="section-block" id="sec-leave">
+      <div class="page-title">Leave Approvals</div>
+      <div class="page-sub">Approve or reject staff leave requests</div>
+      <div id="owner-leave-list"></div>
+    </div>
+
+    <!-- TABLES -->
+    <div class="section-block" id="sec-tables">
+      <div class="page-title">Live Tables</div>
+      <div class="page-sub">Real-time table occupancy status</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px" id="owner-tables"></div>
+    </div>
+
+    <!-- ADMIN CONTROL -->
+    <div class="section-block" id="sec-admin">
+      <div class="page-title">Admin Control System</div>
+      <div class="page-sub">Configure hotel details, profiles, and analytics settings</div>
+      
+      <div style="display:grid;grid-template-columns: 1fr 1fr;gap:24px;margin-top:20px;">
+        <!-- Hotel General Settings -->
+        <div class="chart-box" style="grid-column: 1 / -1">
+          <h4 style="margin-bottom:15px;color:var(--gold)">🏨 Hotel Details & Timings</h4>
+          <form id="admin-hotel-form" onsubmit="saveHotelSettings(event)" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group"><label class="form-label">Hotel Name</label><input type="text" class="form-input" id="cfg-hotel-name" required/></div>
+            <div class="form-group"><label class="form-label">Logo Icon</label><input type="text" class="form-input" id="cfg-hotel-logo" required/></div>
+            <div class="form-group" style="grid-column:1/-1"><label class="form-label">Address</label><input type="text" class="form-input" id="cfg-hotel-address" required/></div>
+            <div class="form-group"><label class="form-label">Phone</label><input type="text" class="form-input" id="cfg-hotel-phone" required/></div>
+            <div class="form-group"><label class="form-label">Email</label><input type="text" class="form-input" id="cfg-hotel-email" required/></div>
+            <div class="form-group"><label class="form-label">Restaurant Timings (Dining)</label><input type="text" class="form-input" id="cfg-hotel-timings" required/></div>
+            <div class="form-group"><label class="form-label">Tax (GST %)</label><input type="number" class="form-input" id="cfg-hotel-tax" min="0" max="100" required/></div>
+            <div class="form-group"><label class="form-label">Currency Symbol</label><input type="text" class="form-input" id="cfg-hotel-currency" required/></div>
+            <div class="form-group" style="grid-column:1/-1"><label class="form-label">About Description 1</label><textarea class="form-input" id="cfg-hotel-about1" rows="3" required></textarea></div>
+            <div class="form-group" style="grid-column:1/-1"><label class="form-label">About Description 2</label><textarea class="form-input" id="cfg-hotel-about2" rows="3" required></textarea></div>
+            <button type="submit" class="btn btn-primary w-full" style="grid-column:1/-1">Save General Settings ✦</button>
+          </form>
+        </div>
+
+        <!-- Profile Settings -->
+        <div class="chart-box" style="grid-column: 1 / -1">
+          <h4 style="margin-bottom:15px;color:var(--gold)">👤 Edit Staff & User Profiles</h4>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label class="form-label">Select User Profile to Edit</label>
+            <select class="form-input" id="cfg-profile-select" onchange="loadProfileToEdit(this.value)"></select>
+          </div>
+          <form id="admin-profile-form" onsubmit="saveProfileSettings(event)" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="cfg-prof-name" required/></div>
+            <div class="form-group"><label class="form-label">Designation</label><input type="text" class="form-input" id="cfg-prof-desig" required/></div>
+            <div class="form-group" style="grid-column:1/-1"><label class="form-label">Profile Photo URL</label><input type="text" class="form-input" id="cfg-prof-photo" required/></div>
+            <div class="form-group" style="grid-column:1/-1"><label class="form-label">Biography / Description</label><textarea class="form-input" id="cfg-prof-desc" rows="3" required></textarea></div>
+            <div class="form-group"><label class="form-label">Salary (₹)</label><input type="number" class="form-input" id="cfg-prof-salary" required/></div>
+            <div class="form-group"><label class="form-label">Shift</label>
+              <select class="form-input" id="cfg-prof-shift">
+                <option value="morning">Morning</option>
+                <option value="evening">Evening</option>
+                <option value="night">Night</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-full" style="grid-column:1/-1">Save Profile Details ✦</button>
+          </form>
+        </div>
+
+        <!-- Database Maintenance -->
+        <div class="chart-box" style="grid-column: 1 / -1; border: 1px solid rgba(239,68,68,0.2); background: rgba(239,68,68,0.02);">
+          <h4 style="margin-bottom:15px;color:#EF4444">⚠️ Database Maintenance & Reset</h4>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:15px;line-height:1.5;">
+            Factory reset clears transactional data (orders, reservations, reviews, leave requests, attendance logs) from the Firestore database while keeping settings, configuration, and user accounts.
+          </p>
+          <button class="btn btn-danger btn-sm" onclick="openResetModal()">🔴 Reset All Data</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- Add/Edit Menu Item Modal -->
+<div class="modal-overlay" id="menu-item-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="menu-modal-title">Add <span class="text-gold">Menu Item</span></div>
+      <button class="modal-close" onclick="closeModal('menu-item-modal')">✕</button>
+    </div>
+    <input type="hidden" id="menu-item-id"/>
+    <div class="form-group"><label class="form-label">Food Name</label><input type="text" class="form-input" id="menu-item-name" required/></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="menu-item-desc" rows="2" required></textarea></div>
+    <div class="form-group"><label class="form-label">Image URL</label><input type="text" class="form-input" id="menu-item-img" required/></div>
+    <div class="form-group"><label class="form-label">Price (₹)</label><input type="number" class="form-input" id="menu-item-price" required/></div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="form-input" id="menu-item-cat">
+        <option value="starters">Starters</option><option value="main">Main Course</option>
+        <option value="fastfood">Fast Food</option><option value="drinks">Drinks</option>
+        <option value="desserts">Desserts</option>
+      </select>
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+      <input type="checkbox" id="menu-item-avail" checked/>
+      <label for="menu-item-avail" class="form-label" style="margin-bottom:0;">Available for order</label>
+    </div>
+    <button class="btn btn-primary w-full mt-4" onclick="saveMenuItem()">Save Menu Item</button>
+  </div>
+</div>
+
+<!-- Add/Edit Staff Modal -->
+<div class="modal-overlay" id="staff-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="staff-modal-title">Add <span class="text-gold">Staff Member</span></div>
+      <button class="modal-close" onclick="closeModal('staff-modal')">✕</button>
+    </div>
+    <input type="hidden" id="staff-member-id"/>
+    <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="staff-name" required/></div>
+    <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="staff-email" required/></div>
+    <div class="form-group"><label class="form-label">Password (for login)</label><input type="password" class="form-input" id="staff-password" required placeholder="••••••••"/></div>
+    <div class="form-group"><label class="form-label">Phone</label><input type="text" class="form-input" id="staff-phone" required/></div>
+    <div class="form-group"><label class="form-label">Salary (₹)</label><input type="number" class="form-input" id="staff-salary" required/></div>
+    <div class="form-group"><label class="form-label">Join Date</label><input type="date" class="form-input" id="staff-joindate" required/></div>
+    <div class="form-group"><label class="form-label">Role</label>
+      <select class="form-input" id="staff-role">
+        <option value="chef">Chef</option><option value="manager">Manager</option>
+        <option value="waiter">Waiter</option><option value="cashier">Cashier</option>
+        <option value="owner">Owner</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Shift</label>
+      <select class="form-input" id="staff-shift">
+        <option value="morning">Morning</option><option value="evening">Evening</option><option value="night">Night</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Status</label>
+      <select class="form-input" id="staff-status">
+        <option value="active">Active</option><option value="inactive">Inactive</option>
+      </select>
+    </div>
+    <button class="btn btn-primary w-full mt-4" onclick="saveStaffMember()">Save Staff</button>
+  </div>
+</div>
+
+<!-- Add/Edit Table Modal -->
+<div class="modal-overlay" id="table-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="table-modal-title">Add <span class="text-gold">Table</span></div>
+      <button class="modal-close" onclick="closeModal('table-modal')">✕</button>
+    </div>
+    <input type="hidden" id="table-id"/>
+    <div class="form-group"><label class="form-label">Table Number</label><input type="number" class="form-input" id="table-number" min="1" required/></div>
+    <div class="form-group"><label class="form-label">Capacity (Guests)</label><input type="number" class="form-input" id="table-capacity" min="1" required/></div>
+    <div class="form-group"><label class="form-label">Initial Status</label>
+      <select class="form-input" id="table-status">
+        <option value="available">Available</option>
+        <option value="reserved">Reserved</option>
+        <option value="occupied">Occupied</option>
+      </select>
+    </div>
+    <button class="btn btn-primary w-full mt-4" onclick="saveTable()">Save Table</button>
+  </div>
+</div>
+
+<!-- Reset Database Modal -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title" style="color:#EF4444">🔴 Factory Reset Database</div>
+      <button class="modal-close" onclick="closeModal('reset-modal')">✕</button>
+    </div>
+    <div style="font-size:0.85rem;line-height:1.5;margin-bottom:16px;">
+      <p style="color:#EF4444;font-weight:700;margin-bottom:8px;">⚠️ Warning: This action cannot be undone.</p>
+      <p style="color:var(--text-secondary);margin-bottom:12px;">This will permanently delete orders, reservations, reviews, attendance logs, and leave requests. Settings and accounts will be preserved.</p>
+      
+      <!-- Checkbox Options -->
+      <div style="background:var(--dark-2);padding:12px;border-radius:var(--radius-sm);margin-bottom:16px;border:1px solid var(--dark-border);">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:8px;font-size:0.82rem;">
+          <input type="checkbox" id="reset-del-menu"/>
+          <span>Also delete all Menu Items?</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.82rem;">
+          <input type="checkbox" id="reset-del-staff"/>
+          <span>Also delete all Staff/Workers (except Owner)?</span>
+        </label>
+      </div>
+
+      <!-- Backup step -->
+      <div style="margin-bottom:16px;padding:12px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:var(--radius-sm);">
+        <div style="font-weight:600;color:var(--gold);margin-bottom:6px;font-size:0.82rem;">💾 Recommended: Backup Database First</div>
+        <button class="btn btn-outline btn-sm w-full" onclick="downloadJSONBackup()">📥 Download JSON Backup</button>
+      </div>
+
+      <!-- Confirmation inputs -->
+      <div class="form-group">
+        <label class="form-label" style="color:var(--text-primary)">To confirm, type <strong style="color:var(--gold)">DELETE ALL DATA</strong> below:</label>
+        <input type="text" class="form-input" id="reset-confirm-text" placeholder="Type here..." oninput="checkResetInputs()"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="color:var(--text-primary)">Enter Owner Password:</label>
+        <input type="password" class="form-input" id="reset-confirm-pass" placeholder="Password" oninput="checkResetInputs()"/>
+      </div>
+    </div>
+    <button class="btn btn-danger w-full" id="reset-submit-btn" disabled onclick="executeDatabaseReset()">Permanently Reset Database</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/utils.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+const user=window.hotelAuth.getUser();
+if(!user||user.role!=='owner'){alert('Access denied.');window.location.href='../index.html';}
+
+// Mobile menu visibility
+if(window.innerWidth<=900) {
+  const mobMenu = document.getElementById('mob-menu');
+  if (mobMenu) mobMenu.style.display='block';
+}
+
+function showSec(name){
+  document.querySelectorAll('.section-block').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const target = document.getElementById(`sec-${name}`);
+  if (target) target.classList.add('active');
+  event.currentTarget.classList.add('active');
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) sidebar.classList.remove('open');
+}
+window.showSec=showSec;
+
+// ── Charts ────────────────────────────────────────────────
+let revenueChart, catChart;
+const chartDefaults={color:'rgba(201,168,76,1)',borderColor:'rgba(201,168,76,1)',backgroundColor:'rgba(201,168,76,0.1)',tension:0.4,fill:true};
+
+function initCharts(){
+  const rCtx=document.getElementById('revenue-chart').getContext('2d');
+  revenueChart=new Chart(rCtx,{type:'line',data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{label:'Revenue (₹)',data:[0,0,0,0,0,0,0],...chartDefaults}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(255,255,255,0.4)'}},y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'rgba(255,255,255,0.4)',callback:v=>`₹${(v/1000).toFixed(0)}k`}}}}});
+
+  const cCtx=document.getElementById('cat-chart').getContext('2d');
+  catChart=new Chart(cCtx,{type:'doughnut',data:{labels:['Main Course','Starters','Fast Food','Drinks','Desserts'],datasets:[{data:[0,0,0,0,0],backgroundColor:['rgba(201,168,76,0.8)','rgba(249,115,22,0.8)','rgba(59,130,246,0.8)','rgba(34,197,94,0.8)','rgba(168,85,247,0.8)'],borderColor:'transparent',borderWidth:8,borderRadius:4}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'rgba(255,255,255,0.6)',padding:16}}}}});
+}
+
+let dynamicChartData={
+  daily:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],data:[0,0,0,0,0,0,0]},
+  weekly:{labels:['W1','W2','W3','W4'],data:[0,0,0,0]},
+  monthly:{labels:['Jan','Feb','Mar','Apr','May','Jun'],data:[0,0,0,0,0,0]}
+};
+
+function switchChart(period,el){
+  document.querySelectorAll('.toggle-opt').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  if(revenueChart && dynamicChartData[period]){
+    revenueChart.data.labels=dynamicChartData[period].labels;
+    revenueChart.data.datasets[0].data=dynamicChartData[period].data;
+    revenueChart.update();
+  }
+}
+window.switchChart=switchChart;
+
+// ── Stats Caches and Dynamic Render ─────────────────────────
+let menuCache = [];
+let ordersCache = [];
+let reviewsCache = [];
+
+function updateStatsAndCharts() {
+  if (!menuCache.length) return;
+
+  const orders = ordersCache;
+  const today = new Date().toISOString().split('T')[0];
+  const todayOrders = orders.filter(o=>o.createdAt&&o.createdAt.startsWith(today));
+  const revenue = orders.filter(o=>o.paid).reduce((s,o)=>s+(o.total||0),0);
+
+  // Avg Rating from reviews
+  let avgRating = 0;
+  if(reviewsCache.length > 0) {
+    const sum = reviewsCache.reduce((s,r)=>s+(r.rating||0),0);
+    avgRating = (sum/reviewsCache.length).toFixed(1);
+  }
+
+  // Week-over-week revenue comparison
+  const nowMs = Date.now();
+  const oneDayMs = 24*60*60*1000;
+  const last7DaysRev = orders
+    .filter(o=>o.paid&&o.createdAt&&(nowMs - new Date(o.createdAt).getTime())<=7*oneDayMs)
+    .reduce((s,o)=>s+(o.total||0),0);
+  const prev7DaysRev = orders
+    .filter(o=>o.paid&&o.createdAt&&(nowMs - new Date(o.createdAt).getTime())>7*oneDayMs && (nowMs - new Date(o.createdAt).getTime())<=14*oneDayMs)
+    .reduce((s,o)=>s+(o.total||0),0);
+
+  let changeText = 'Stable';
+  if(prev7DaysRev > 0) {
+    const pct = ((last7DaysRev - prev7DaysRev)/prev7DaysRev)*100;
+    changeText = `${pct>=0?'↑ +':'↓ '}${pct.toFixed(0)}% vs last week`;
+  } else if(last7DaysRev > 0) {
+    changeText = `↑ +100% vs last week`;
+  }
+
+  const s=document.getElementById('owner-stats');
+  if(s){
+    s.innerHTML=`
+      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-value">₹${revenue.toLocaleString()}</div><div class="stat-label">Total Revenue</div><div class="stat-change">${changeText}</div></div>
+      <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-value">${orders.length}</div><div class="stat-label">Total Orders</div></div>
+      <div class="stat-card"><div class="stat-icon">🍽️</div><div class="stat-value">${todayOrders.length}</div><div class="stat-label">Today's Orders</div></div>
+      <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-value">${avgRating>0?avgRating:'—'}</div><div class="stat-label">Avg Rating</div></div>`;
+  }
+
+  // Order history
+  const list=document.getElementById('owner-orders-list');
+  if(list){
+    if(!orders.length){
+      list.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:20px">No orders in history.</p>';
+    } else {
+      list.innerHTML=`<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>#</th><th>Table</th><th>Items</th><th>Amount</th><th>Status</th><th>Time</th><th>Paid</th></tr></thead><tbody>${orders.slice().reverse().map((o,i)=>`<tr><td style="color:var(--text-muted);font-size:0.78rem">${(o.id||'').slice(-6).toUpperCase()}</td><td><span style="color:var(--gold);font-weight:700">T${o.tableNumber}</span></td><td style="font-size:0.82rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(o.items||[]).map(x=>`${x.name}×${x.qty}`).join(', ')}</td><td style="color:var(--gold);font-weight:700">₹${o.total||0}</td><td><span class="badge badge-${o.status}">${o.status}</span></td><td style="font-size:0.78rem;color:var(--text-muted)">${new Date(o.createdAt).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'})}</td><td>${o.paid?'<span style="color:var(--success);font-size:0.8rem;font-weight:700">✓ Paid</span>':'<span style="color:var(--danger);font-size:0.8rem">Unpaid</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+    }
+  }
+
+  // Billing
+  const bl=document.getElementById('billing-list');
+  if(bl){
+    const paid=orders.filter(o=>o.status==='served'||o.paid);
+    if(!paid.length){
+      bl.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:20px">No bills generated yet.</p>';
+    } else {
+      bl.innerHTML=paid.slice().reverse().map(o=>`
+        <div class="billing-row" style="flex-direction:column;align-items:stretch;gap:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <div>
+              <div style="font-weight:600">Order #${(o.id||'').slice(-6).toUpperCase()} · Table ${o.tableNumber}</div>
+              <div style="font-size:0.78rem;color:var(--text-muted)">${new Date(o.createdAt).toLocaleString('en-IN')}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="font-family:var(--font-display);font-size:1.3rem;color:var(--gold)">₹${(o.total||0).toLocaleString()}</div>
+              <span class="badge badge-${o.paid ? 'active' : 'pending'}">${o.paid ? 'Paid' : 'Unpaid'}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;border-top:1px dashed var(--dark-border);padding-top:10px;margin-top:2px;">
+            <button class="btn btn-outline btn-xs" onclick="printBillDirectly('${o.id}')">🖨️ Print Bill</button>
+            <button class="btn btn-outline btn-xs" onclick="downloadBillPDF('${o.id}')">📥 Download PDF</button>
+            <button class="btn btn-outline btn-xs" onclick="shareBill('${o.id}')">🔗 Share</button>
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  // Top Foods
+  const itemQuantities={};
+  orders.forEach(o=>{
+    (o.items||[]).forEach(item=>{
+      itemQuantities[item.name]=(itemQuantities[item.name]||0)+(item.qty||1);
+    });
+  });
+  const sortedFoods=Object.keys(itemQuantities).sort((a,b)=>itemQuantities[b]-itemQuantities[a]);
+  const topFoodsEl=document.getElementById('top-foods');
+  if(topFoodsEl){
+    if(sortedFoods.length===0){
+      topFoodsEl.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:20px">No orders placed yet.</p>';
+    } else {
+      topFoodsEl.innerHTML=sortedFoods.slice(0,5).map((name,i)=>{
+        const m=menuCache.find(x=>x.name===name);
+        const price=m?m.price:'';
+        const rating=m?m.rating:'';
+        return `<div class="top-food-item"><div style="display:flex;align-items:center;gap:12px"><div class="food-rank">${i+1}</div><div><div style="font-weight:600;font-size:0.9rem">${name}</div><div style="font-size:0.75rem;color:var(--text-muted)">${price?`₹${price}`:''} (${itemQuantities[name]} ordered)</div></div></div><div style="color:var(--gold);font-weight:700">${rating?`★ ${rating}`:''}</div></div>`;
+      }).join('');
+    }
+  }
+
+  // Category Doughnut Chart
+  const catCounts={'Main Course':0,'Starters':0,'Fast Food':0,'Drinks':0,'Desserts':0};
+  const catMapping={main:'Main Course',starters:'Starters',fastfood:'Fast Food',drinks:'Drinks',desserts:'Desserts'};
+  orders.forEach(o=>{
+    (o.items||[]).forEach(item=>{
+      const m=menuCache.find(x=>x.name===item.name||x.id===item.id);
+      if(m&&m.cat&&catMapping[m.cat]){
+        catCounts[catMapping[m.cat]]+=(item.qty||1);
+      }
+    });
+  });
+  if(catChart){
+    catChart.data.datasets[0].data=[catCounts['Main Course'],catCounts['Starters'],catCounts['Fast Food'],catCounts['Drinks'],catCounts['Desserts']];
+    catChart.update();
+  }
+
+  // Revenue Chart (Daily, Weekly, Monthly)
+  updateRevenueChartData(orders);
+}
+
+function updateRevenueChartData(orders){
+  const paidOrders=orders.filter(o=>o.paid&&o.createdAt);
+
+  // Daily
+  const dailyLabels=[];
+  const dailyValues=[];
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const dateStr=d.toISOString().split('T')[0];
+    dailyLabels.push(days[d.getDay()]);
+    dailyValues.push(paidOrders.filter(o=>o.createdAt.startsWith(dateStr)).reduce((sum,o)=>sum+(o.total||0),0));
+  }
+  dynamicChartData.daily={labels:dailyLabels,data:dailyValues};
+
+  // Weekly
+  const weeklyLabels=['W1','W2','W3','W4'];
+  const weeklyValues=[0,0,0,0];
+  const now=Date.now();
+  const oneWeekMs=7*24*60*60*1000;
+  paidOrders.forEach(o=>{
+    const age=now-new Date(o.createdAt).getTime();
+    if(age>=0&&age<4*oneWeekMs){
+      const w=3-Math.floor(age/oneWeekMs);
+      if(w>=0&&w<4) weeklyValues[w]+=(o.total||0);
+    }
+  });
+  dynamicChartData.weekly={labels:weeklyLabels,data:weeklyValues};
+
+  // Monthly
+  const monthlyLabels=[];
+  const monthlyValues=[];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  for(let i=5;i>=0;i--){
+    const d=new Date(); d.setMonth(d.getMonth()-i);
+    monthlyLabels.push(months[d.getMonth()]);
+    const ym=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    monthlyValues.push(paidOrders.filter(o=>o.createdAt.startsWith(ym)).reduce((sum,o)=>sum+(o.total||0),0));
+  }
+  dynamicChartData.monthly={labels:monthlyLabels,data:monthlyValues};
+
+  const activeOpt=document.querySelector('.toggle-opt.active');
+  const period=activeOpt?activeOpt.textContent.toLowerCase():'daily';
+  if(revenueChart && dynamicChartData[period]){
+    revenueChart.data.labels=dynamicChartData[period].labels;
+    revenueChart.data.datasets[0].data=dynamicChartData[period].data;
+    revenueChart.update();
+  }
+}
+
+// Listen to Firestore real-time snapshots
+window.firestore.onSnapshot('menu', items => {
+  menuCache = items;
+  updateStatsAndCharts();
+  renderMenuControl();
+});
+
+window.firestore.onSnapshot('orders', items => {
+  ordersCache = items;
+  updateStatsAndCharts();
+});
+
+window.firestore.onSnapshot('reviews', items => {
+  reviewsCache = items;
+  updateStatsAndCharts();
+});
+
+
+
+function renderMenuControl(){
+  const listEl = document.getElementById('menu-control-list');
+  if(!listEl) return;
+  
+  let html = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+      <button class="btn btn-primary btn-sm" onclick="openAddMenuModal()">+ Add Menu Item</button>
+    </div>`;
+    
+  if(!menuCache.length) {
+    listEl.innerHTML = html + '<p style="color:var(--text-muted);text-align:center;padding:20px">No menu items found.</p>';
+    return;
+  }
+  
+  const cats={starters:'Starters',main:'Main Course',fastfood:'Fast Food',drinks:'Drinks',desserts:'Desserts'};
+  Object.entries(cats).forEach(([cat,label])=>{
+    const items = menuCache.filter(m=>m.cat===cat);
+    if(items.length > 0) {
+      html+=`<div style="font-size:0.75rem;font-weight:700;letter-spacing:0.15em;color:var(--gold);margin:20px 0 10px;text-transform:uppercase">${label}</div>`;
+      items.forEach(m=>{
+        html+=`<div class="menu-toggle-row">
+          <div style="display:flex;align-items:center;gap:12px">
+            <img src="${m.img}" style="width:44px;height:44px;border-radius:8px;object-fit:cover"/>
+            <div><div style="font-weight:600">${m.name}</div><div style="font-size:0.78rem;color:var(--text-muted)">₹${m.price}</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button class="btn btn-outline btn-xs" onclick="openEditMenuModal('${m.id}')">✏️</button>
+            <button class="btn btn-danger btn-xs" onclick="deleteMenuItem('${m.id}')">🗑️</button>
+            <label class="toggle-switch">
+              <input type="checkbox" ${m.available?'checked':''} onchange="toggleMenuItem('${m.id}',this.checked)"/>
+              <div class="toggle-track"></div>
+              <div class="toggle-thumb"></div>
+            </label>
+          </div>
+        </div>`;
+      });
+    }
+  });
+  listEl.innerHTML=html;
+}
+async function toggleMenuItem(id,val){
+  await window.firestore.update('menu',id,{available:val});
+  showToast(val?'Item marked available ✦':'Item marked unavailable','success');
+}
+window.toggleMenuItem=toggleMenuItem;
+
+// Staff & Salary (Firestore snapshot driven)
+let ownerStaffCache=[];
+window.firestore.onSnapshot('staff', items=>{
+  ownerStaffCache=items;
+  renderOwnerStaff();
+  
+  // Populate profile selector in Admin Control
+  const select = document.getElementById('cfg-profile-select');
+  if (select) {
+    const curVal = select.value;
+    select.innerHTML = items.map(s => `<option value="${s.id}">${s.name} (${s.role})</option>`).join('');
+    if (curVal && items.some(s => s.id === curVal)) {
+      select.value = curVal;
+    } else if (items.length > 0) {
+      select.value = items[0].id;
+      loadProfileToEdit(items[0].id);
+    }
+  }
+});
+
+function renderOwnerStaff(){
+  const listEl = document.getElementById('owner-staff-list');
+  if(!listEl) return;
+  
+  const total=ownerStaffCache.reduce((s,x)=>s+(x.salary||0),0);
+  let html = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="padding:10px 16px;background:var(--dark-card);border:1px solid var(--dark-border);border-radius:var(--radius);display:flex;gap:20px;align-items:center;">
+        <span style="color:var(--text-muted)">Total Monthly Payroll:</span>
+        <span style="font-family:var(--font-display);font-size:1.4rem;color:var(--gold)">₹${total.toLocaleString()}</span>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openAddStaffModal()">+ Add Staff</button>
+    </div>`;
+
+  if(!ownerStaffCache.length) {
+    listEl.innerHTML = html + '<p style="color:var(--text-muted)">No staff records found.</p>';
+    return;
+  }
+  
+  html += `
+  <div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Name</th><th>Role</th><th>Salary</th><th>Shift</th><th>Status</th><th>Action</th></tr></thead><tbody>
+  ${ownerStaffCache.map(s=>`
+    <tr>
+      <td style="font-weight:600">${s.name}</td>
+      <td style="text-transform:capitalize;color:var(--text-muted)">${s.role}</td>
+      <td style="color:var(--gold);font-weight:700">₹${(s.salary||0).toLocaleString()}</td>
+      <td style="text-transform:capitalize">${s.shift||'—'}</td>
+      <td><span class="badge badge-${s.status}">${s.status}</span></td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-xs" onclick="openEditStaffModal('${s.id}')">✏️</button>
+          <button class="btn btn-danger btn-xs" onclick="deleteStaff('${s.id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join('')}</tbody></table></div>`;
+    
+  listEl.innerHTML = html;
+}
+
+// Attendance
+let ownerStaffMap={};
+window.firestore.onSnapshot('staff', items=>{ items.forEach(s=>{ownerStaffMap[s.id]=s;}); });
+window.firestore.onSnapshot('attendance', att=>{
+  document.getElementById('owner-att-list').innerHTML=`<div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Staff</th><th>Date</th><th>Check In</th><th>Status</th></tr></thead><tbody>${att.map(a=>`<tr><td style="font-weight:600">${ownerStaffMap[a.staffId]?.name||a.staffId}</td><td style="color:var(--text-muted)">${a.date}</td><td>${a.checkIn||'—'}</td><td><span class="badge badge-${a.status}">${a.status}</span></td></tr>`).join('')}</tbody></table></div>`;
+});
+
+// Leave
+window.firestore.onSnapshot('leave_requests',leaves=>{
+  const list=document.getElementById('owner-leave-list');
+  if(!leaves.length){list.innerHTML='<p style="color:var(--text-muted)">No leave requests.</p>';return;}
+  list.innerHTML=leaves.map(l=>`<div class="billing-row"><div><div style="font-weight:600">${l.staffName}</div><div style="font-size:0.78rem;color:var(--text-muted)">${l.date} — ${l.reason}</div></div><div style="display:flex;gap:8px"><button class="btn btn-success btn-sm" onclick="approveLeave('${l.id}')">Approve</button><button class="btn btn-danger btn-sm" onclick="rejectLeave('${l.id}')">Reject</button></div></div>`).join('');
+});
+async function approveLeave(id){await window.firestore.update('leave_requests',id,{status:'approved'});showToast('Leave approved','success');}
+async function rejectLeave(id){await window.firestore.update('leave_requests',id,{status:'rejected'});showToast('Leave rejected','error');}
+window.approveLeave=approveLeave;window.rejectLeave=rejectLeave;
+
+// Tables
+let tablesCache = [];
+window.firestore.onSnapshot('tables',tables=>{
+  tablesCache = tables;
+  const el=document.getElementById('owner-tables');
+  if(!el) return;
+  
+  let html = `
+    <div style="grid-column: 1 / -1; display:flex; justify-content:flex-end; margin-bottom: 12px;">
+      <button class="btn btn-primary btn-sm" onclick="openAddTableModal()">+ Add Table</button>
+    </div>`;
+    
+  if (!tables.length) {
+    el.innerHTML = html + '<div style="grid-column: 1 / -1; text-align:center; padding:20px; color:var(--text-muted)">No tables found.</div>';
+    return;
+  }
+  
+  html += tables.sort((a,b)=>a.number-b.number).map(t=>`
+    <div style="background:var(--dark-card);border:2px solid ${t.status==='occupied'?'rgba(239,68,68,0.4)':t.status==='reserved'?'rgba(245,158,11,0.4)':'rgba(34,197,94,0.2)'};border-radius:var(--radius);padding:18px;text-align:center">
+      <div style="font-family:var(--font-display);font-size:1.8rem;color:var(--gold)">${t.number}</div>
+      <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">Cap: ${t.capacity || 4}</div>
+      <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-top:6px">${t.status}</div>
+      <div style="display:flex;gap:6px;justify-content:center;margin-top:12px;">
+        <button class="btn btn-outline btn-xs" onclick="openEditTableModal('${t.id}')">✏️</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteTable('${t.id}')">🗑️</button>
+      </div>
+    </div>`).join('');
+    
+  el.innerHTML = html;
+});
+
+// Menu Item CRUD Handlers
+function openAddMenuModal() {
+  document.getElementById('menu-item-id').value = '';
+  document.getElementById('menu-modal-title').innerHTML = 'Add <span class="text-gold">Menu Item</span>';
+  document.getElementById('menu-item-name').value = '';
+  document.getElementById('menu-item-desc').value = '';
+  document.getElementById('menu-item-img').value = '';
+  document.getElementById('menu-item-price').value = '';
+  document.getElementById('menu-item-cat').value = 'starters';
+  document.getElementById('menu-item-avail').checked = true;
+  openModal('menu-item-modal');
+}
+function openEditMenuModal(id) {
+  const m = menuCache.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('menu-item-id').value = id;
+  document.getElementById('menu-modal-title').innerHTML = 'Edit <span class="text-gold">Menu Item</span>';
+  document.getElementById('menu-item-name').value = m.name || '';
+  document.getElementById('menu-item-desc').value = m.desc || '';
+  document.getElementById('menu-item-img').value = m.img || '';
+  document.getElementById('menu-item-price').value = m.price || '';
+  document.getElementById('menu-item-cat').value = m.cat || 'starters';
+  document.getElementById('menu-item-avail').checked = m.available !== false;
+  openModal('menu-item-modal');
+}
+async function saveMenuItem() {
+  const id = document.getElementById('menu-item-id').value;
+  const data = {
+    name: document.getElementById('menu-item-name').value,
+    desc: document.getElementById('menu-item-desc').value,
+    img: document.getElementById('menu-item-img').value,
+    price: parseInt(document.getElementById('menu-item-price').value) || 0,
+    cat: document.getElementById('menu-item-cat').value,
+    available: document.getElementById('menu-item-avail').checked,
+    rating: 5.0,
+    updatedAt: new Date().toISOString()
+  };
+  
+  if (id) {
+    await window.firestore.update('menu', id, data);
+    showToast('Menu item updated successfully!', 'success');
+  } else {
+    const newId = 'm' + String(menuCache.length + 1 + Math.floor(Math.random()*100)).padStart(2, '0');
+    await window.firestore.set('menu', newId, data);
+    showToast('Menu item added successfully!', 'success');
+  }
+  closeModal('menu-item-modal');
+}
+async function deleteMenuItem(id) {
+  if(!confirm('Delete this menu item?')) return;
+  await window.firestore.delete('menu', id);
+  showToast('Menu item deleted', 'warning');
+}
+window.openAddMenuModal = openAddMenuModal;
+window.openEditMenuModal = openEditMenuModal;
+window.saveMenuItem = saveMenuItem;
+window.deleteMenuItem = deleteMenuItem;
+
+// Staff CRUD Handlers
+function openAddStaffModal() {
+  document.getElementById('staff-member-id').value = '';
+  document.getElementById('staff-modal-title').innerHTML = 'Add <span class="text-gold">Staff Member</span>';
+  document.getElementById('staff-name').value = '';
+  document.getElementById('staff-email').value = '';
+  document.getElementById('staff-password').value = '';
+  document.getElementById('staff-phone').value = '';
+  document.getElementById('staff-salary').value = '';
+  document.getElementById('staff-joindate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('staff-role').value = 'waiter';
+  document.getElementById('staff-shift').value = 'morning';
+  document.getElementById('staff-status').value = 'active';
+  openModal('staff-modal');
+}
+function openEditStaffModal(id) {
+  const s = ownerStaffCache.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('staff-member-id').value = id;
+  document.getElementById('staff-modal-title').innerHTML = 'Edit <span class="text-gold">Staff Member</span>';
+  document.getElementById('staff-name').value = s.name || '';
+  document.getElementById('staff-email').value = s.email || '';
+  document.getElementById('staff-password').value = s.password || '';
+  document.getElementById('staff-phone').value = s.phone || '';
+  document.getElementById('staff-salary').value = s.salary || '';
+  document.getElementById('staff-joindate').value = s.joinDate || '';
+  document.getElementById('staff-role').value = s.role || 'waiter';
+  document.getElementById('staff-shift').value = s.shift || 'morning';
+  document.getElementById('staff-status').value = s.status || 'active';
+  openModal('staff-modal');
+}
+async function saveStaffMember() {
+  const id = document.getElementById('staff-member-id').value;
+  const data = {
+    name: document.getElementById('staff-name').value,
+    email: document.getElementById('staff-email').value,
+    password: document.getElementById('staff-password').value,
+    phone: document.getElementById('staff-phone').value,
+    salary: parseInt(document.getElementById('staff-salary').value) || 0,
+    joinDate: document.getElementById('staff-joindate').value,
+    role: document.getElementById('staff-role').value,
+    shift: document.getElementById('staff-shift').value,
+    status: document.getElementById('staff-status').value,
+    updatedAt: new Date().toISOString()
+  };
+  
+  if (id) {
+    await window.firestore.update('staff', id, data);
+    showToast('Staff updated successfully!', 'success');
+  } else {
+    const newId = 's' + String(ownerStaffCache.length + 1 + Math.floor(Math.random()*100)).padStart(2, '0');
+    await window.firestore.set('staff', newId, data);
+    showToast('Staff added successfully!', 'success');
+  }
+  closeModal('staff-modal');
+}
+async function deleteStaff(id) {
+  if(!confirm('Delete this staff member?')) return;
+  await window.firestore.delete('staff', id);
+  showToast('Staff member deleted', 'warning');
+}
+window.openAddStaffModal = openAddStaffModal;
+window.openEditStaffModal = openEditStaffModal;
+window.saveStaffMember = saveStaffMember;
+window.deleteStaff = deleteStaff;
+
+// Table CRUD Handlers
+function openAddTableModal() {
+  document.getElementById('table-id').value = '';
+  document.getElementById('table-modal-title').innerHTML = 'Add <span class="text-gold">Table</span>';
+  document.getElementById('table-number').value = tablesCache.length + 1;
+  document.getElementById('table-capacity').value = 4;
+  document.getElementById('table-status').value = 'available';
+  openModal('table-modal');
+}
+function openEditTableModal(id) {
+  const t = tablesCache.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('table-id').value = id;
+  document.getElementById('table-modal-title').innerHTML = 'Edit <span class="text-gold">Table</span>';
+  document.getElementById('table-number').value = t.number || '';
+  document.getElementById('table-capacity').value = t.capacity || '';
+  document.getElementById('table-status').value = t.status || 'available';
+  openModal('table-modal');
+}
+async function saveTable() {
+  const id = document.getElementById('table-id').value;
+  const num = parseInt(document.getElementById('table-number').value) || 1;
+  const cap = parseInt(document.getElementById('table-capacity').value) || 2;
+  const status = document.getElementById('table-status').value;
+  const data = {
+    number: num,
+    capacity: cap,
+    status: status,
+    currentOrder: null,
+    updatedAt: new Date().toISOString()
+  };
+  
+  if (id) {
+    await window.firestore.update('tables', id, data);
+    showToast('Table updated successfully!', 'success');
+  } else {
+    const newId = `table_${num}`;
+    await window.firestore.set('tables', newId, data);
+    showToast('Table added successfully!', 'success');
+  }
+  closeModal('table-modal');
+}
+async function deleteTable(id) {
+  if(!confirm('Delete this table?')) return;
+  await window.firestore.delete('tables', id);
+  showToast('Table deleted', 'warning');
+}
+window.openAddTableModal = openAddTableModal;
+window.openEditTableModal = openEditTableModal;
+window.saveTable = saveTable;
+window.deleteTable = deleteTable;
+
+// Settings Load/Save Handlers
+let settingsCache = {};
+window.firestore.onSnapshot('settings', list => {
+  const general = list.find(s => s.id === 'general');
+  if (general) {
+    settingsCache = general;
+    
+    const nameEl = document.getElementById('cfg-hotel-name');
+    if (nameEl) {
+      nameEl.value = general.name || '';
+      document.getElementById('cfg-hotel-logo').value = general.logo || '';
+      document.getElementById('cfg-hotel-address').value = general.address || '';
+      document.getElementById('cfg-hotel-phone').value = general.phone || '';
+      document.getElementById('cfg-hotel-email').value = general.email || '';
+      document.getElementById('cfg-hotel-timings').value = general.timings || '';
+      document.getElementById('cfg-hotel-tax').value = general.tax_percentage || 5;
+      document.getElementById('cfg-hotel-currency').value = general.currency || '₹';
+      document.getElementById('cfg-hotel-about1').value = general.about_desc1 || '';
+      document.getElementById('cfg-hotel-about2').value = general.about_desc2 || '';
+    }
+  }
+});
+
+async function saveHotelSettings(e) {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('cfg-hotel-name').value,
+    logo: document.getElementById('cfg-hotel-logo').value,
+    address: document.getElementById('cfg-hotel-address').value,
+    phone: document.getElementById('cfg-hotel-phone').value,
+    email: document.getElementById('cfg-hotel-email').value,
+    timings: document.getElementById('cfg-hotel-timings').value,
+    tax_percentage: parseInt(document.getElementById('cfg-hotel-tax').value) || 0,
+    currency: document.getElementById('cfg-hotel-currency').value,
+    about_desc1: document.getElementById('cfg-hotel-about1').value,
+    about_desc2: document.getElementById('cfg-hotel-about2').value,
+    updatedAt: new Date().toISOString()
+  };
+  await window.firestore.set('settings', 'general', data);
+  showToast('Hotel settings saved successfully!', 'success');
+}
+window.saveHotelSettings = saveHotelSettings;
+
+async function saveProfileSettings(e) {
+  e.preventDefault();
+  const uid = document.getElementById('cfg-profile-select').value;
+  if (!uid) return;
+  
+  const data = {
+    name: document.getElementById('cfg-prof-name').value,
+    designation: document.getElementById('cfg-prof-desig').value,
+    photo: document.getElementById('cfg-prof-photo').value,
+    description: document.getElementById('cfg-prof-desc').value,
+    salary: parseInt(document.getElementById('cfg-prof-salary').value) || 0,
+    shift: document.getElementById('cfg-prof-shift').value,
+    updatedAt: new Date().toISOString()
+  };
+  
+  await window.firestore.update('staff', uid, data);
+  showToast('Profile details saved successfully!', 'success');
+}
+window.saveProfileSettings = saveProfileSettings;
+
+function loadProfileToEdit(uid) {
+  const staff = ownerStaffCache.find(s => s.id === uid);
+  if (!staff) return;
+  document.getElementById('cfg-prof-name').value = staff.name || '';
+  document.getElementById('cfg-prof-desig').value = staff.designation || (staff.role === 'owner' ? 'Owner & Founder' : staff.role === 'manager' ? 'General Manager' : staff.role === 'chef' ? 'Head Chef' : 'Staff');
+  document.getElementById('cfg-prof-photo').value = staff.photo || '';
+  document.getElementById('cfg-prof-desc').value = staff.description || '';
+  document.getElementById('cfg-prof-salary').value = staff.salary || 0;
+  document.getElementById('cfg-prof-shift').value = staff.shift || 'morning';
+}
+function openResetModal() {
+  document.getElementById('reset-confirm-text').value = '';
+  document.getElementById('reset-confirm-pass').value = '';
+  document.getElementById('reset-del-menu').checked = false;
+  document.getElementById('reset-del-staff').checked = false;
+  document.getElementById('reset-submit-btn').disabled = true;
+  openModal('reset-modal');
+}
+window.openResetModal = openResetModal;
+
+function downloadJSONBackup() {
+  const backup = {
+    orders: ordersCache || [],
+    menu: menuCache || [],
+    reviews: reviewsCache || [],
+    staff: ownerStaffCache || [],
+    tables: tablesCache || [],
+    leave_requests: (window.HotelDB?.cache?.leave_requests || []),
+    attendance: (window.HotelDB?.cache?.attendance || []),
+    settings: (window.HotelDB?.cache?.settings || [])
+  };
+  
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
+  const dlAnchorElem = document.createElement('a');
+  dlAnchorElem.setAttribute("href", dataStr);
+  dlAnchorElem.setAttribute("download", `hotel_database_backup_${new Date().toISOString().split('T')[0]}.json`);
+  dlAnchorElem.click();
+  showToast('JSON Backup downloaded! 💾', 'success');
+}
+window.downloadJSONBackup = downloadJSONBackup;
+
+function checkResetInputs() {
+  const text = document.getElementById('reset-confirm-text').value.trim();
+  const pass = document.getElementById('reset-confirm-pass').value;
+  const ownerRecord = ownerStaffCache.find(s => s.role === 'owner');
+  const expectedPass = ownerRecord ? ownerRecord.password : 'owner123';
+  
+  const btn = document.getElementById('reset-submit-btn');
+  if (text === 'DELETE ALL DATA' && pass === expectedPass) {
+    btn.disabled = false;
+  } else {
+    btn.disabled = true;
+  }
+}
+window.checkResetInputs = checkResetInputs;
+
+async function executeDatabaseReset() {
+  const btn = document.getElementById('reset-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Resetting Database...';
+  
+  try {
+    // 1. Transactional collections to delete
+    const collectionsToClear = ['orders', 'reservations', 'reviews', 'leave_requests', 'attendance', 'notifications', 'analytics', 'billing'];
+    
+    // Checkboxes
+    const delMenu = document.getElementById('reset-del-menu').checked;
+    const delStaff = document.getElementById('reset-del-staff').checked;
+    
+    if (delMenu) collectionsToClear.push('menu');
+    if (delStaff) collectionsToClear.push('staff');
+    
+    for (const col of collectionsToClear) {
+      const items = await window.firestore.getAll(col);
+      for (const item of items) {
+        if (col === 'staff') {
+          // Do NOT delete the owner account
+          if (item.role === 'owner' || item.email?.includes('owner')) {
+            continue;
+          }
+        }
+        await window.firestore.delete(col, item.id);
+      }
+    }
+    
+    // 2. Reset table statuses back to available
+    for (const t of tablesCache) {
+      await window.firestore.update('tables', t.id, { status: 'available', currentOrder: null });
+    }
+    
+    showToast('Database factory reset completed successfully! ✦', 'success');
+    closeModal('reset-modal');
+    
+    // Reload page to clear caches and UI states
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+    
+  } catch (err) {
+    console.error('Reset error:', err);
+    showToast('Error resetting database: ' + err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Permanently Reset Database';
+  }
+}
+window.executeDatabaseReset = executeDatabaseReset;
+window.loadProfileToEdit = loadProfileToEdit;
+
+// Init charts on load
+let chartsInitialized = false;
+function safeInitCharts() {
+  if (chartsInitialized) return;
+  initCharts();
+  chartsInitialized = true;
+}
+document.addEventListener('DOMContentLoaded',safeInitCharts);
+setTimeout(safeInitCharts,500);
+</script>
+</body>
+</html>

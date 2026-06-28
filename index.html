@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>The Grand Mehta Palace – Luxury Hotel & Restaurant</title>
+<meta name="description" content="Experience unparalleled luxury at The Grand Mehta Palace. Fine dining, premium rooms, and world-class hospitality."/>
+<link rel="stylesheet" href="css/global.css"/>
+<link rel="stylesheet" href="css/landing.css"/>
+</head>
+<body>
+
+<!-- PAGE LOADER -->
+<div id="page-loader">
+  <div class="loader-logo">✦ Grand Mehta Palace</div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+  <div style="margin-top:12px;font-size:0.75rem;letter-spacing:0.2em;color:var(--text-muted)">LOADING EXPERIENCE...</div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- TOP NAV -->
+<nav class="landing-nav" id="landing-nav">
+  <div class="nav-inner">
+    <div class="nav-logo">✦ Grand Mehta Palace</div>
+    <div class="nav-links" id="nav-links">
+      <a href="#about" class="nav-link">About</a>
+      <a href="#gallery" class="nav-link">Gallery</a>
+      <a href="#facilities" class="nav-link">Facilities</a>
+      <a href="#team" class="nav-link">Team</a>
+      <a href="#reviews" class="nav-link">Reviews</a>
+      <a href="#contact" class="nav-link">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-outline btn-sm" onclick="toggleTheme()" id="theme-btn">☀️ Light</button>
+      <select class="lang-select" onchange="setLang(this.value)" id="lang-select">
+        <option value="en">English</option>
+        <option value="hi">हिंदी</option>
+        <option value="gu">ગુજરાતી</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="scrollToRoles()">Enter System →</button>
+      <button class="hamburger" onclick="toggleNav()" id="hamburger">☰</button>
+    </div>
+  </div>
+</nav>
+
+<!-- SECTION 1: HERO -->
+<section class="hero-section" id="hero">
+  <div class="hero-slider" id="hero-slider">
+    <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920&q=90')"></div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1551882547-ff40c63fe2fa?w=1920&q=90')"></div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1920&q=90')"></div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=1920&q=90')"></div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&q=90')"></div>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-label animate-fade-in" data-i18n="hero_label">ESTABLISHED 1995 · AHMEDABAD, INDIA</div>
+    <h1 class="hero-title" data-i18n="hero_title">The Grand<br/><span class="text-gold font-serif">Mehta Palace</span></h1>
+    <p class="hero-subtitle" data-i18n="hero_subtitle">Where every meal is a masterpiece and every stay is a memory</p>
+    <div class="hero-ctas">
+      <button class="btn btn-primary btn-lg" onclick="scrollToRoles()" data-i18n="hero_cta1">Explore System →</button>
+      <button class="btn btn-outline btn-lg" onclick="scrollTo({top:document.getElementById('about').offsetTop-70,behavior:'smooth'})" data-i18n="hero_cta2">Discover More</button>
+    </div>
+  </div>
+  <div class="hero-dots" id="hero-dots"></div>
+  <div class="hero-scroll-hint">
+    <div class="scroll-line"></div>
+    <span>SCROLL</span>
+  </div>
+</section>
+
+<!-- SECTION 2: ABOUT -->
+<section class="section" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-images">
+        <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=600&q=80" alt="Hotel Interior" class="about-img-main"/>
+        <img src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=400&q=80" alt="Hotel Room" class="about-img-secondary"/>
+        <div class="about-badge-float">
+          <div class="float-num">30+</div>
+          <div class="float-label">Years of Excellence</div>
+        </div>
+      </div>
+      <div class="about-content">
+        <div class="section-label" data-i18n="about_label">Our Story</div>
+        <h2 class="section-title" data-i18n="about_title">A Legacy of<br/><span class="text-gold">Luxury & Taste</span></h2>
+        <div class="divider divider-left"></div>
+        <p class="section-desc" data-i18n="about_desc1" id="hotel-about-desc1">Founded in 1995 by visionary entrepreneur Arjun Mehta, The Grand Mehta Palace has stood as Ahmedabad's crown jewel of hospitality. What began as a modest guesthouse has grown into a world-class destination.</p>
+        <p class="section-desc mt-4" data-i18n="about_desc2" id="hotel-about-desc2">Our philosophy is simple: every guest deserves a royal experience. From the hand-crafted interiors to the meticulously curated menu, every detail speaks of our commitment to excellence.</p>
+        <div class="about-stats">
+          <div class="about-stat"><span class="stat-num">50+</span><span class="stat-lbl">Luxury Rooms</span></div>
+          <div class="about-stat"><span class="stat-num">200+</span><span class="stat-lbl">Daily Guests</span></div>
+          <div class="about-stat"><span class="stat-num">4.9★</span><span class="stat-lbl">Avg Rating</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: GALLERY -->
+<section class="section bg-alt" id="gallery">
+  <div class="container">
+    <div class="text-center mb-6">
+      <div class="section-label" data-i18n="gallery_label">Visual Journey</div>
+      <h2 class="section-title" data-i18n="gallery_title">Our <span class="text-gold">Gallery</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="gallery-grid" id="gallery-grid"></div>
+  </div>
+</section>
+
+<!-- SECTION 4: FACILITIES -->
+<section class="section" id="facilities">
+  <div class="container">
+    <div class="text-center mb-6">
+      <div class="section-label">World Class</div>
+      <h2 class="section-title" data-i18n="fac_title">Our <span class="text-gold">Facilities</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="facilities-grid" id="facilities-grid"></div>
+  </div>
+</section>
+
+<!-- SECTION 5: TEAM -->
+<section class="section bg-alt" id="team">
+  <div class="container">
+    <div class="text-center mb-6">
+      <div class="section-label">The People</div>
+      <h2 class="section-title">Meet Our <span class="text-gold">Team</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="team-grid" id="team-grid"></div>
+  </div>
+</section>
+
+<!-- SECTION 6: REVIEWS -->
+<section class="section" id="reviews">
+  <div class="container">
+    <div class="text-center mb-6">
+      <div class="section-label">Testimonials</div>
+      <h2 class="section-title">Guest <span class="text-gold">Reviews</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="reviews-track-wrap">
+      <div class="reviews-track" id="reviews-track"></div>
+    </div>
+    <div class="review-form-section">
+      <h3 class="text-center mt-6 mb-4" style="font-family:var(--font-display)">Share Your <span class="text-gold">Experience</span></h3>
+      <div class="review-form-wrap">
+        <form id="review-form" onsubmit="submitReview(event)">
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Your Name</label><input type="text" class="form-input" id="review-name" placeholder="John Doe" required/></div>
+            <div class="form-group"><label class="form-label">Rating</label>
+              <div class="star-picker" id="star-picker">
+                <span class="star-opt" data-val="1">★</span><span class="star-opt" data-val="2">★</span><span class="star-opt" data-val="3">★</span><span class="star-opt" data-val="4">★</span><span class="star-opt" data-val="5">★</span>
+              </div>
+              <input type="hidden" id="review-rating" value="5"/>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Your Review</label><textarea class="form-input" id="review-comment" rows="3" placeholder="Tell us about your experience..." required></textarea></div>
+          <button type="submit" class="btn btn-primary w-full">Submit Review ✦</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 7: CONTACT -->
+<section class="section bg-alt" id="contact">
+  <div class="container">
+    <div class="text-center mb-6">
+      <div class="section-label">Get In Touch</div>
+      <h2 class="section-title">Contact <span class="text-gold">Us</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <div class="contact-item"><div class="contact-icon">📍</div><div><h4>Address</h4><p id="hotel-address">123 Palace Road, Navrangpura,<br/>Ahmedabad, Gujarat 380009</p></div></div>
+        <div class="contact-item"><div class="contact-icon">📞</div><div><h4>Phone</h4><p id="hotel-phone">+91 79 2630 0000<br/>+91 98765 43210</p></div></div>
+        <div class="contact-item"><div class="contact-icon">✉️</div><div><h4>Email</h4><p id="hotel-email">info@grandmehtapalace.com<br/>reservations@grandmehtapalace.com</p></div></div>
+        <div class="contact-item"><div class="contact-icon">🕐</div><div><h4>Hours</h4><p id="hotel-timings">Restaurant: 6:00 AM – 12:00 AM<br/>Reception: 24/7</p></div></div>
+      </div>
+      <div class="map-container">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3671.9!2d72.5713!3d23.0225!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDAxJzIxLjAiTiA3MsKwMzQnMTYuNyJF!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin" width="100%" height="350" style="border:0;border-radius:var(--radius);filter:grayscale(0.3) invert(0.9) hue-rotate(200deg)" allowfullscreen="" loading="lazy"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TABLE RESERVATION -->
+<section class="section" id="reservation">
+  <div class="container" style="max-width:600px">
+    <div class="text-center mb-6">
+      <div class="section-label">Book A Table</div>
+      <h2 class="section-title">Make a <span class="text-gold">Reservation</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="card-glass">
+      <form id="reservation-form" onsubmit="submitReservation(event)">
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="res-name" required placeholder="Your Name"/></div>
+          <div class="form-group"><label class="form-label">Phone</label><input type="tel" class="form-input" id="res-phone" required placeholder="+91 XXXXX XXXXX"/></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Date & Time</label><input type="datetime-local" class="form-input" id="res-time" required/></div>
+          <div class="form-group"><label class="form-label">Number of Guests</label><select class="form-input" id="res-guests"><option value="1">1 Person</option><option value="2" selected>2 People</option><option value="3">3 People</option><option value="4">4 People</option><option value="5">5 People</option><option value="6+">6+ People</option></select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Special Requests</label><textarea class="form-input" id="res-notes" placeholder="Any special requests or dietary requirements..." rows="2"></textarea></div>
+        <button type="submit" class="btn btn-primary w-full btn-lg">Reserve Table ✦</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ROLE ENTRY SECTION -->
+<section class="section bg-alt" id="roles">
+  <div class="container">
+    <div class="text-center mb-6">
+      <div class="section-label">System Access</div>
+      <h2 class="section-title">Enter the <span class="text-gold">Ecosystem</span></h2>
+      <div class="divider"></div>
+      <p class="section-desc" style="margin:0 auto">Choose your role to access the full management system</p>
+    </div>
+    <div class="roles-grid">
+      <div class="role-card" onclick="enterAs('customer')" id="role-customer">
+        <span class="role-icon">👤</span>
+        <div class="role-name">Customer</div>
+        <div class="role-desc">Browse menu, place orders, track real-time status, get your bill</div>
+        <div class="role-arrow">→</div>
+      </div>
+      <div class="role-card" onclick="enterAs('chef')" id="role-chef">
+        <span class="role-icon">👨‍🍳</span>
+        <div class="role-name">Chef</div>
+        <div class="role-desc">View incoming orders, manage kitchen workflow, accept or reject orders</div>
+        <div class="role-arrow">→</div>
+      </div>
+      <div class="role-card" onclick="enterAs('manager')" id="role-manager">
+        <span class="role-icon">📋</span>
+        <div class="role-name">Manager</div>
+        <div class="role-desc">Monitor tables, manage staff, attendance, shifts, and live orders</div>
+        <div class="role-arrow">→</div>
+      </div>
+      <div class="role-card" onclick="enterAs('owner')" id="role-owner">
+        <span class="role-icon">👑</span>
+        <div class="role-name">Owner</div>
+        <div class="role-desc">Full analytics, revenue reports, menu control, staff salary & approvals</div>
+        <div class="role-arrow">→</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="nav-logo" style="font-size:1.6rem;margin-bottom:16px">✦ Grand Mehta Palace</div>
+        <p style="color:var(--text-muted);line-height:1.8;font-size:0.9rem">A legacy of luxury and taste since 1995. Where every guest is royalty.</p>
+      </div>
+      <div class="footer-col"><h4 class="text-gold mb-4">Quick Links</h4><a href="#about" class="footer-link">About Us</a><a href="#gallery" class="footer-link">Gallery</a><a href="#facilities" class="footer-link">Facilities</a><a href="#reviews" class="footer-link">Reviews</a></div>
+      <div class="footer-col"><h4 class="text-gold mb-4">Services</h4><a href="#reservation" class="footer-link">Table Booking</a><a href="#roles" class="footer-link">Online Ordering</a><a href="#contact" class="footer-link">Catering Events</a></div>
+      <div class="footer-col"><h4 class="text-gold mb-4">Contact</h4><p class="footer-link" id="footer-address">📍 123 Palace Road, Ahmedabad</p><p class="footer-link" id="footer-phone">📞 +91 79 2630 0000</p><p class="footer-link" id="footer-email">✉️ info@grandmehtapalace.com</p></div>
+    </div>
+    <div class="footer-bottom"><p>© 2026 The Grand Mehta Palace. All rights reserved. | Powered by Hotel Management Ecosystem</p></div>
+  </div>
+</footer>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Staff Login <span id="login-role-label" class="text-gold"></span></div>
+      <button class="modal-close" onclick="closeModal('login-modal')">✕</button>
+    </div>
+    <form onsubmit="doLogin(event)">
+      <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="login-email" required placeholder="staff@hotel.com"/></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="login-password" required placeholder="••••••••"/></div>
+      <button type="submit" class="btn btn-primary w-full btn-lg">Sign In →</button>
+    </form>
+  </div>
+</div>
+
+<!-- CUSTOMER ENTRY MODAL -->
+<div class="modal-overlay" id="customer-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Select Your <span class="text-gold">Table</span></div>
+      <button class="modal-close" onclick="closeModal('customer-modal')">✕</button>
+    </div>
+    <div class="form-group mt-2">
+      <label class="form-label">Enter Table Number (1–10)</label>
+      <input type="number" class="form-input" id="table-input" min="1" max="10" placeholder="e.g. 5"/>
+    </div>
+    <button class="btn btn-primary w-full btn-lg mt-4" onclick="enterCustomer()">Start Ordering →</button>
+    <div class="divider mt-4"></div>
+    <p class="text-center text-sm" style="color:var(--text-muted);margin-top:12px">Or scan the QR code on your table</p>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/landing.js"></script>
+</body>
+</html>

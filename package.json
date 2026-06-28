@@ -1,0 +1,9 @@
+{
+  "name": "techyhotel",
+  "version": "1.0.0",
+  "description": "Grand Mehta Palace Hotel Management System",
+  "main": "index.html",
+  "scripts": {
+    "build": "node build.js"
+  }
+}

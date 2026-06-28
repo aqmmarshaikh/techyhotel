@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Order Food – Grand Mehta Palace</title>
+<link rel="stylesheet" href="../css/global.css"/>
+<style>
+.customer-wrap{display:grid;grid-template-columns:1fr 380px;min-height:100vh;padding-top:70px;}
+.menu-panel{padding:28px;overflow-y:auto;}
+.cart-panel{position:fixed;right:0;top:70px;bottom:0;width:380px;background:var(--dark-2);border-left:1px solid var(--dark-border);display:flex;flex-direction:column;padding:24px;overflow-y:auto;}
+.cat-tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px;}
+.cat-tab{padding:8px 20px;border-radius:99px;background:var(--dark-card);border:1px solid var(--dark-border);font-size:0.82rem;font-weight:600;cursor:pointer;transition:var(--transition);}
+.cat-tab.active{background:var(--gold);color:#0A0A0F;border-color:var(--gold);}
+.cat-tab:hover:not(.active){border-color:var(--glass-border);}
+.menu-card{display:flex;gap:16px;background:var(--dark-card);border:1px solid var(--dark-border);border-radius:var(--radius);padding:16px;margin-bottom:14px;transition:var(--transition);}
+.menu-card:hover{border-color:var(--glass-border);transform:translateY(-2px);}
+.menu-card img{width:90px;height:90px;object-fit:cover;border-radius:var(--radius-sm);flex-shrink:0;}
+.menu-card-body{flex:1;}
+.menu-card-name{font-weight:600;font-size:0.95rem;margin-bottom:4px;}
+.menu-card-desc{font-size:0.78rem;color:var(--text-muted);line-height:1.6;margin-bottom:8px;}
+.menu-card-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.menu-price{font-size:1.1rem;font-weight:700;color:var(--gold);}
+.unavail-tag{background:rgba(239,68,68,0.1);color:#EF4444;padding:3px 10px;border-radius:99px;font-size:0.72rem;font-weight:700;}
+.cart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--dark-border);}
+.cart-title{font-family:var(--font-display);font-size:1.4rem;}
+.cart-empty{text-align:center;padding:40px 0;color:var(--text-muted);}
+.cart-empty-icon{font-size:3rem;margin-bottom:12px;}
+.cart-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--dark-border);}
+.cart-item-info{flex:1;}
+.cart-item-name{font-size:0.9rem;font-weight:600;margin-bottom:2px;}
+.cart-item-price{font-size:0.85rem;color:var(--gold);}
+.cart-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--dark-border);}
+.cart-total-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem;}
+.cart-total-row.grand{font-size:1.1rem;font-weight:700;color:var(--gold);margin-top:10px;padding-top:10px;border-top:1px solid var(--dark-border);}
+.instructions-input{width:100%;padding:10px 14px;background:var(--dark-card);border:1px solid var(--dark-border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:0.82rem;resize:none;margin-top:14px;}
+.instructions-input::placeholder{color:var(--text-muted);}
+.instructions-input:focus{outline:none;border-color:var(--gold);}
+.order-status-wrap{background:var(--dark-card);border:1px solid var(--dark-border);border-radius:var(--radius);padding:20px;margin-bottom:20px;}
+.status-steps{display:flex;justify-content:space-between;position:relative;margin-top:16px;}
+.status-steps::before{content:'';position:absolute;top:14px;left:10%;right:10%;height:2px;background:var(--dark-border);}
+.status-step{text-align:center;flex:1;position:relative;z-index:1;}
+.step-dot{width:28px;height:28px;border-radius:50%;background:var(--dark-card);border:2px solid var(--dark-border);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;transition:var(--transition);}
+.step-dot.done{background:var(--gold);border-color:var(--gold);color:#0A0A0F;}
+.step-dot.active{border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,168,76,0.2);}
+.step-label{font-size:0.7rem;color:var(--text-muted);letter-spacing:0.05em;}
+.customer-nav{position:fixed;top:0;left:0;right:0;height:70px;background:var(--dark-2);border-bottom:1px solid var(--dark-border);z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 24px;}
+.customer-nav .nav-logo{font-family:var(--font-display);font-size:1.2rem;color:var(--gold);}
+.table-chip{background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#0A0A0F;padding:6px 18px;border-radius:99px;font-weight:700;font-size:0.85rem;}
+@media(max-width:900px){.customer-wrap{grid-template-columns:1fr;}.cart-panel{position:fixed;bottom:0;left:0;right:0;top:auto;width:100%;height:auto;max-height:60vh;border-left:none;border-top:1px solid var(--dark-border);}.menu-panel{padding-bottom:320px;}}
+</style>
+</head>
+<body>
+
+<nav class="customer-nav">
+  <div class="nav-logo">✦ Grand Mehta Palace</div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="table-chip" id="table-chip">Table —</div>
+    <a href="../index.html" class="btn btn-outline btn-sm">← Home</a>
+  </div>
+</nav>
+
+<div class="customer-wrap">
+  <!-- MENU PANEL -->
+  <div class="menu-panel" id="menu-panel">
+    <!-- Order Status -->
+    <div class="order-status-wrap" id="order-status-wrap" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <h4>Your Order Status</h4>
+        <span class="badge" id="status-badge">Preparing</span>
+      </div>
+      <div class="status-steps" id="status-steps">
+        <div class="status-step"><div class="step-dot" id="step-preparing">⏳</div><div class="step-label">Preparing</div></div>
+        <div class="status-step"><div class="step-dot" id="step-cooking">🔥</div><div class="step-label">Cooking</div></div>
+        <div class="status-step"><div class="step-dot" id="step-ready">✓</div><div class="step-label">Ready</div></div>
+        <div class="status-step"><div class="step-dot" id="step-served">🍽️</div><div class="step-label">Served</div></div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <h2 style="font-family:var(--font-display);font-size:1.8rem">Our <span class="text-gold">Menu</span></h2>
+      <select class="lang-select" onchange="setLang(this.value)" id="lang-select" style="background:var(--dark-card);border:1px solid var(--dark-border);border-radius:99px;color:var(--text-primary);padding:8px 14px;font-size:0.8rem;">
+        <option value="en">English</option><option value="hi">हिंदी</option><option value="gu">ગુજરાતી</option>
+      </select>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="cat-tabs" id="cat-tabs">
+      <div class="cat-tab active" data-cat="all">🍴 All Items</div>
+      <div class="cat-tab" data-cat="starters">🥗 Starters</div>
+      <div class="cat-tab" data-cat="main">🍛 Main Course</div>
+      <div class="cat-tab" data-cat="fastfood">🍔 Fast Food</div>
+      <div class="cat-tab" data-cat="drinks">🥤 Drinks</div>
+      <div class="cat-tab" data-cat="desserts">🍮 Desserts</div>
+    </div>
+
+    <!-- Menu Items -->
+    <div id="menu-list"></div>
+  </div>
+
+  <!-- CART PANEL -->
+  <div class="cart-panel">
+    <div class="cart-header">
+      <div class="cart-title">🛒 Your Cart</div>
+      <span class="badge badge-available" id="cart-count">0 items</span>
+    </div>
+    <div id="cart-items">
+      <div class="cart-empty"><div class="cart-empty-icon">🍽️</div><p>Your cart is empty</p><p style="font-size:0.8rem;margin-top:6px;color:var(--text-muted)">Add items from the menu</p></div>
+    </div>
+    <div class="cart-footer" id="cart-footer" style="display:none">
+      <div class="cart-total-row"><span>Subtotal</span><span id="cart-subtotal">₹0</span></div>
+      <div class="cart-total-row"><span>GST (5%)</span><span id="cart-tax">₹0</span></div>
+      <div class="cart-total-row grand"><span>Total</span><span id="cart-total">₹0</span></div>
+      <textarea class="instructions-input" id="cart-instructions" rows="2" placeholder="Special instructions (e.g. less spicy, no onion, extra cheese...)"></textarea>
+      <button class="btn btn-primary w-full mt-4 btn-lg" onclick="placeOrder()" style="margin-top:14px">Place Order ✦</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/utils.js"></script>
+<script src="../js/i18n.js"></script>
+<script>
+// ── State ──────────────────────────────────────────────────
+const params = new URLSearchParams(location.search);
+const tableNum = parseInt(params.get('table') || sessionStorage.getItem('customerTable') || 1);
+let cart = [];
+let currentCat = 'all';
+let activeOrderId = null;
+
+// ── Init ──────────────────────────────────────────────────
+document.getElementById('table-chip').textContent = `Table ${tableNum}`;
+
+// ── Menu items cache (populated by Firestore snapshot) ────
+let menuItems = {};
+
+// ── Listen to menu_items collection in real-time ──────────
+window.firestore.onSnapshot('menu', items => {
+  menuItems = {};
+  items.forEach(item => { menuItems[item.id] = item; });
+  renderMenu();
+});
+
+// ── Render Menu ───────────────────────────────────────────
+function renderMenu() {
+  const allItems = Object.values(menuItems);
+  const filtered = currentCat==='all' ? allItems : allItems.filter(i=>i.cat===currentCat);
+  const lang = localStorage.getItem('hotelLang')||'en';
+  const list = document.getElementById('menu-list');
+  if(!allItems.length){ list.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:40px">No menu items available at the moment.</p>'; return; }
+  list.innerHTML = filtered.map(item=>{
+    const name = lang==='hi'?(item.nameHi||item.name):(lang==='gu'?(item.nameGu||item.name):item.name);
+    const inCart = cart.find(c=>c.id===item.id);
+    return `
+    <div class="menu-card ${!item.available?'unavailable':''}">
+      <img src="${item.img}" alt="${name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200'"/>
+      <div class="menu-card-body">
+        <div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
+          <div class="menu-card-name">${name}</div>
+          ${!item.available?'<span class="unavail-tag">Unavailable</span>':''}
+        </div>
+        <div class="menu-card-desc">${item.desc}</div>
+        <div class="menu-card-footer">
+          <div>
+            <div class="menu-price">₹${item.price}</div>
+            <div style="font-size:0.72rem;color:var(--gold)">★ ${item.rating}</div>
+          </div>
+          ${item.available ? (inCart ? `
+            <div class="qty-control">
+              <button class="qty-btn" onclick="changeQty('${item.id}',-1)">−</button>
+              <span class="qty-value">${inCart.qty}</span>
+              <button class="qty-btn" onclick="changeQty('${item.id}',1)">+</button>
+            </div>
+          ` : `<button class="btn btn-primary btn-sm" onclick="addToCart('${item.id}')">+ Add</button>`) : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Cart Logic ────────────────────────────────────────────
+function addToCart(id) {
+  const item = menuItems[id];
+  if(!item||!item.available) return;
+  const ex = cart.find(c=>c.id===id);
+  if(ex) ex.qty++; else cart.push({id,name:item.name,price:item.price,qty:1});
+  renderMenu(); renderCart(); showToast(`${item.name} added to cart ✦`,'success');
+}
+window.addToCart = addToCart;
+
+function changeQty(id, delta) {
+  const idx = cart.findIndex(c=>c.id===id);
+  if(idx===-1) return;
+  cart[idx].qty += delta;
+  if(cart[idx].qty <= 0) cart.splice(idx,1);
+  renderMenu(); renderCart();
+}
+window.changeQty = changeQty;
+
+function renderCart() {
+  const container = document.getElementById('cart-items');
+  const footer = document.getElementById('cart-footer');
+  const countEl = document.getElementById('cart-count');
+  if(cart.length===0) {
+    container.innerHTML='<div class="cart-empty"><div class="cart-empty-icon">🍽️</div><p>Your cart is empty</p><p style="font-size:0.8rem;margin-top:6px;color:var(--text-muted)">Add items from the menu</p></div>';
+    footer.style.display='none';
+    countEl.textContent='0 items';
+    return;
+  }
+  const subtotal = cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const tax = Math.round(subtotal*0.05);
+  const total = subtotal+tax;
+  container.innerHTML = cart.map(c=>`
+    <div class="cart-item">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${c.name}</div>
+        <div class="cart-item-price">₹${c.price} × ${c.qty} = ₹${c.price*c.qty}</div>
+      </div>
+      <div class="qty-control">
+        <button class="qty-btn" onclick="changeQty('${c.id}',-1)">−</button>
+        <span class="qty-value">${c.qty}</span>
+        <button class="qty-btn" onclick="changeQty('${c.id}',1)">+</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('cart-subtotal').textContent=`₹${subtotal}`;
+  document.getElementById('cart-tax').textContent=`₹${tax}`;
+  document.getElementById('cart-total').textContent=`₹${total}`;
+  footer.style.display='block';
+  countEl.textContent=`${cart.reduce((s,c)=>s+c.qty,0)} items`;
+}
+
+// ── Place Order ───────────────────────────────────────────
+async function placeOrder() {
+  if(cart.length===0){showToast('Cart is empty','error');return;}
+  const subtotal=cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const tax=Math.round(subtotal*0.05);
+  const instructions=document.getElementById('cart-instructions').value;
+  const order = {
+    tableNumber:tableNum,
+    items:cart.map(c=>({...c,instructions})),
+    status:'preparing',
+    subtotal, tax, total:subtotal+tax,
+    instructions,
+    createdAt:new Date().toISOString(),
+    paid:false
+  };
+  const orderId = await window.firestore.set('orders',null,order);
+  activeOrderId = orderId;
+  await window.firestore.update('tables',`table_${tableNum}`,{status:'occupied',currentOrder:orderId});
+  // Notify
+  const msg=`🆕 ORDER #${orderId.slice(-4).toUpperCase()}\nTable: ${tableNum}\nItems: ${cart.map(c=>`${c.name} x${c.qty}`).join(', ')}\nTotal: ₹${subtotal+tax}\nTime: ${new Date().toLocaleTimeString()}`;
+  sendWhatsApp('manager',msg); sendWhatsApp('owner',msg);
+  cart=[]; renderCart(); renderMenu();
+  showToast('Order placed! Tracking live status below ✦','success');
+  document.getElementById('order-status-wrap').style.display='block';
+  listenOrderStatus(orderId);
+}
+window.placeOrder = placeOrder;
+
+// ── Live Status ───────────────────────────────────────────
+function listenOrderStatus(orderId) {
+  window.firestore.onSnapshot('orders', orders=>{
+    const order = orders.find(o=>o.id===orderId);
+    if(!order) return;
+    const statusMap = {preparing:0,cooking:1,ready:2,served:3};
+    const idx = statusMap[order.status]||0;
+    const steps=['preparing','cooking','ready','served'];
+    const badge = document.getElementById('status-badge');
+    if(badge){badge.textContent=order.status.charAt(0).toUpperCase()+order.status.slice(1);badge.className=`badge badge-${order.status}`;}
+    steps.forEach((s,i)=>{
+      const dot=document.getElementById(`step-${s}`);
+      if(!dot)return;
+      dot.classList.remove('done','active');
+      if(i<idx) dot.classList.add('done');
+      else if(i===idx) dot.classList.add('active');
+    });
+    if(order.status==='ready') showToast('🍽️ Your order is READY! Waiter on the way!','success');
+    if(order.status==='served') showToast('✅ Order served! Enjoy your meal!','success');
+  });
+}
+
+function sendWhatsApp(role,msg){console.log(`📲 WA → ${role}:`,msg);}
+
+// ── Category Tabs ─────────────────────────────────────────
+document.getElementById('cat-tabs').addEventListener('click',e=>{
+  const tab=e.target.closest('.cat-tab');
+  if(!tab)return;
+  document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));
+  tab.classList.add('active');
+  currentCat=tab.dataset.cat;
+  renderMenu();
+});
+
+function showToast(msg,type='info'){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  t.className=`toast toast-${type}`;
+  t.innerHTML=`<span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{t.style.animation='slideOut 0.4s ease forwards';setTimeout(()=>t.remove(),400);},3500);
+}
+
+// Init (menu loaded via Firestore onSnapshot above)
+renderCart();
+
+// Override setLang to trigger menu re-rendering
+const origSetLang = window.setLang;
+window.setLang = function(lang) {
+  if (typeof origSetLang === 'function') origSetLang(lang);
+  renderMenu();
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Chef Dashboard – Grand Mehta Palace</title>
+<link rel="stylesheet" href="../css/global.css"/>
+<style>
+body{background:var(--dark);}
+.chef-wrap{min-height:100vh;padding-top:70px;}
+.chef-header{background:linear-gradient(135deg,rgba(201,168,76,0.1),rgba(249,115,22,0.05));border-bottom:1px solid var(--dark-border);padding:24px 32px;display:flex;align-items:center;justify-content:space-between;}
+.chef-title{font-family:var(--font-display);font-size:1.8rem;}
+.orders-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:24px;padding:32px;}
+.kitchen-card{background:var(--dark-card);border:2px solid var(--dark-border);border-radius:var(--radius-lg);overflow:hidden;transition:var(--transition);animation:fadeIn 0.5s ease;}
+.kitchen-card.new-order{border-color:rgba(249,115,22,0.5);box-shadow:0 0 0 3px rgba(249,115,22,0.1);}
+.kitchen-card.accepted{border-color:rgba(34,197,94,0.4);}
+.kc-header{padding:18px 20px;background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:space-between;}
+.kc-table{font-family:var(--font-display);font-size:1.4rem;color:var(--gold);}
+.kc-time{font-size:0.75rem;color:var(--text-muted);}
+.kc-body{padding:20px;}
+.kc-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--dark-border);font-size:0.88rem;}
+.kc-item:last-child{border-bottom:none;}
+.kc-item-name{font-weight:600;}
+.kc-item-qty{background:rgba(201,168,76,0.1);color:var(--gold);padding:2px 10px;border-radius:99px;font-size:0.78rem;font-weight:700;}
+.kc-instructions{margin-top:12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius-sm);padding:10px 14px;font-size:0.82rem;color:var(--warning);}
+.kc-footer{padding:16px 20px;display:flex;gap:12px;border-top:1px solid var(--dark-border);}
+.kc-timer{font-size:1.2rem;font-weight:700;font-family:var(--font-display);color:var(--warning);}
+.empty-state{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--text-muted);}
+.empty-icon{font-size:4rem;margin-bottom:16px;}
+.live-dot{width:10px;height:10px;border-radius:50%;background:var(--success);animation:pulse 1s ease infinite;display:inline-block;margin-right:8px;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)}}
+</style>
+</head>
+<body>
+
+<nav class="dash-nav">
+  <div class="nav-logo">✦ Chef Dashboard</div>
+  <div class="nav-actions">
+    <span style="font-size:0.85rem;color:var(--text-secondary)" id="chef-name"></span>
+    <button class="btn btn-outline btn-sm" onclick="hotelAuth.signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="chef-wrap">
+  <div class="chef-header">
+    <div>
+      <div class="chef-title">Kitchen Orders <span class="text-gold" id="order-count">( 0 )</span></div>
+      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px"><span class="live-dot"></span>Live updates · Auto-refreshing</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:0.8rem;color:var(--text-muted)">Current Time</div>
+      <div style="font-family:var(--font-display);font-size:1.5rem;color:var(--gold)" id="chef-clock"></div>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--dark-border);">
+    <div style="background:var(--dark-2);padding:20px 24px;text-align:center;">
+      <div style="font-size:1.8rem;font-weight:700;color:#F97316" id="stat-new">0</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.1em">NEW ORDERS</div>
+    </div>
+    <div style="background:var(--dark-2);padding:20px 24px;text-align:center;">
+      <div style="font-size:1.8rem;font-weight:700;color:#F59E0B" id="stat-cooking">0</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.1em">COOKING</div>
+    </div>
+    <div style="background:var(--dark-2);padding:20px 24px;text-align:center;">
+      <div style="font-size:1.8rem;font-weight:700;color:#22C55E" id="stat-ready">0</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.1em">READY</div>
+    </div>
+    <div style="background:var(--dark-2);padding:20px 24px;text-align:center;">
+      <div style="font-size:1.8rem;font-weight:700;color:#6366F1" id="stat-served">0</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);letter-spacing:0.1em">SERVED TODAY</div>
+    </div>
+  </div>
+
+  <div class="orders-grid" id="orders-grid">
+    <div class="empty-state"><div class="empty-icon">🍳</div><p style="font-size:1.1rem;font-weight:600">No Active Orders</p><p style="margin-top:8px;font-size:0.9rem">New orders will appear here in real-time</p></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="../js/utils.js"></script>
+<script>
+// Auth check
+const user = window.hotelAuth.getUser();
+if(!user||user.role!=='chef'){alert('Access denied. Chef login required.');window.location.href='../index.html';}
+else document.getElementById('chef-name').textContent=`👨‍🍳 ${user.name}`;
+
+// Clock
+function updateClock(){document.getElementById('chef-clock').textContent=new Date().toLocaleTimeString('en-IN',{hour12:true,hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+updateClock(); setInterval(updateClock,1000);
+
+// Toast
+function showToast(msg,type='info'){
+  const c=document.getElementById('toast-container');const t=document.createElement('div');
+  t.className=`toast toast-${type}`;t.innerHTML=`<span>${msg}</span>`;c.appendChild(t);
+  setTimeout(()=>{t.style.animation='slideOut 0.4s ease forwards';setTimeout(()=>t.remove(),400);},3500);
+}
+
+// Action: Accept/Reject
+async function acceptOrder(id){
+  await window.firestore.update('orders',id,{status:'cooking',chefAction:'accepted',chefTime:new Date().toISOString()});
+  showToast('Order accepted! Start cooking 🔥','success');
+}
+async function rejectOrder(id){
+  if(!confirm('Reject this order?'))return;
+  await window.firestore.update('orders',id,{status:'rejected',chefAction:'rejected'});
+  showToast('Order rejected','error');
+}
+async function markReady(id){
+  await window.firestore.update('orders',id,{status:'ready',readyTime:new Date().toISOString()});
+  showToast('Order marked as READY! 🎉','success');
+}
+window.acceptOrder=acceptOrder; window.rejectOrder=rejectOrder; window.markReady=markReady;
+
+// Render Orders
+function renderOrders(orders){
+  const active=orders.filter(o=>['preparing','cooking','ready'].includes(o.status));
+  const grid=document.getElementById('orders-grid');
+  document.getElementById('order-count').textContent=`( ${active.length} )`;
+  document.getElementById('stat-new').textContent=orders.filter(o=>o.status==='preparing').length;
+  document.getElementById('stat-cooking').textContent=orders.filter(o=>o.status==='cooking').length;
+  document.getElementById('stat-ready').textContent=orders.filter(o=>o.status==='ready').length;
+  document.getElementById('stat-served').textContent=orders.filter(o=>o.status==='served').length;
+  if(!active.length){
+    grid.innerHTML='<div class="empty-state"><div class="empty-icon">🍳</div><p style="font-size:1.1rem;font-weight:600">No Active Orders</p><p style="margin-top:8px;font-size:0.9rem">New orders will appear here in real-time</p></div>';
+    return;
+  }
+  grid.innerHTML=active.map(o=>{
+    const age=Math.floor((Date.now()-new Date(o.createdAt).getTime())/60000);
+    const isNew=o.status==='preparing';
+    const isCooking=o.status==='cooking';
+    const isReady=o.status==='ready';
+    const instructions=o.instructions||(o.items&&o.items[0]?.instructions)||'';
+    return `
+    <div class="kitchen-card ${isNew?'new-order':''} ${isCooking?'accepted':''}">
+      <div class="kc-header">
+        <div>
+          <div class="kc-table">Table ${o.tableNumber}</div>
+          <div class="kc-time">Order #${(o.id||'').slice(-4).toUpperCase()} · ${age}m ago</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span class="badge badge-${o.status}">${o.status}</span>
+          <span class="kc-timer">⏱ ${age}min</span>
+        </div>
+      </div>
+      <div class="kc-body">
+        <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:10px">ORDER ITEMS</div>
+        ${(o.items||[]).map(item=>`
+          <div class="kc-item">
+            <span class="kc-item-name">${item.name}</span>
+            <span class="kc-item-qty">× ${item.qty}</span>
+          </div>`).join('')}
+        ${instructions?`<div class="kc-instructions">⚠️ ${instructions}</div>`:''}
+      </div>
+      <div class="kc-footer">
+        ${isNew?`<button class="btn btn-success w-full" onclick="acceptOrder('${o.id}')">✓ Accept</button><button class="btn btn-danger" onclick="rejectOrder('${o.id}')">✕</button>`:''}
+        ${isCooking?`<button class="btn btn-primary w-full" onclick="markReady('${o.id}')">✓ Mark Ready</button>`:''}
+        ${isReady?`<div style="text-align:center;width:100%;color:var(--success);font-weight:700">✅ Awaiting Waiter</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Listen to orders
+window.firestore.onSnapshot('orders', orders=>{
+  const prev=document.getElementById('stat-new').textContent;
+  renderOrders(orders);
+  const newCount=orders.filter(o=>o.status==='preparing').length;
+  if(newCount>parseInt(prev)) showToast('🔔 New order received!','info');
+});
+</script>
+</body>
+</html>
