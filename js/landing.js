@@ -224,7 +224,7 @@ function loadSettings() {
       const galleryList = general.gallery || defaultGallery;
       galGrid.innerHTML = galleryList.map(g => `
         <div class="gallery-item ${g.size === 'large' ? 'large' : ''}">
-          <img src="${g.img}" alt="${g.title}" loading="lazy"/>
+          <img src="${g.img}" alt="${g.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1551882547-ff40c63fe2fa?w=400'"/>
           <div class="gallery-overlay"><span>${g.title}</span></div>
         </div>
       `).join('');
@@ -264,7 +264,7 @@ function loadTeam() {
       return `
         <div class="team-card ${isFeatured ? 'featured' : ''}">
           <div class="team-img-wrap">
-            <img src="${photo}" alt="${s.name}"/>
+            <img src="${photo}" alt="${s.name}" onerror="this.src='https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80'"/>
             ${isFeatured ? '<div class="team-glow"></div>' : ''}
           </div>
           <div class="team-badge">${designation}</div>

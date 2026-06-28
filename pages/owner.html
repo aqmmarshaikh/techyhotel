@@ -607,7 +607,7 @@ function renderMenuControl(){
       items.forEach(m=>{
         html+=`<div class="menu-toggle-row">
           <div style="display:flex;align-items:center;gap:12px">
-            <img src="${m.img}" style="width:44px;height:44px;border-radius:8px;object-fit:cover"/>
+            <img src="${m.img}" style="width:44px;height:44px;border-radius:8px;object-fit:cover" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100'"/>
             <div><div style="font-weight:600">${m.name}</div><div style="font-size:0.78rem;color:var(--text-muted)">₹${m.price}</div></div>
           </div>
           <div style="display:flex;align-items:center;gap:12px;">
